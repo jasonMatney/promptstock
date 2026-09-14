@@ -1,0 +1,11 @@
+import {FestivalEngine} from '../../engine-source.mjs';
+import {FestivalPlay} from '../../festival-play.mjs';
+import {FestivalMusic,RECORD_TRACKS} from '../../festival-music.mjs';
+const engine=new FestivalEngine(document.querySelector('#world'));engine.resize();await engine.loadJamKit();
+const ui=document.querySelector('#festivalPlay'),status=document.querySelector('#reviewStatus');
+const review=Object.create(FestivalPlay.prototype);
+const music=new FestivalMusic({onChange:()=>{review.syncRecordAudio();if(music.track&&!music.track.isConnected){music.track.hidden=true;document.body.append(music.track);}}});
+Object.assign(review,{e:engine,kit:engine.jamKit,ui,active:'records',profile:[],recordHomes:new Map(RECORD_TRACKS.map(({title})=>{const name=title==='Stay Curious'?'Stay curious':title;const o=engine.jamKit.instances.get('record_'+name.toLowerCase().replaceAll(' ','_'));return [name,{o,p:o.position.clone(),q:o.quaternion.clone()}];})),h:{playRecord:name=>music.playRecord(name),toggleMusic:()=>music.status==='playing'||music.status==='loading'?music.pause():music.play(),musicState:()=>music.state,musicPlaying:()=>music.state.playing,record:()=>{}},ambient:()=>{},result(_id,text){this.hint(text);}});
+review.setupRecords();await engine.compile();let last=performance.now();
+function frame(now){review.update(Math.min(.05,(now-last)/1000),now/1000);last=now;engine.draw(now/1000);const a=music.track;status.textContent=a?`${music.title} · ${music.status} · ${(a.currentTime||0).toFixed(1)} / ${Number.isFinite(a.duration)?a.duration.toFixed(1):'…'} s · ${a.paused?'paused':'playing'}`:'Choose a record to test';requestAnimationFrame(frame);}requestAnimationFrame(frame);
+window.addEventListener('resize',()=>engine.resize());

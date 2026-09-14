@@ -1,0 +1,24 @@
+import { RECORD_TRACKS, BACKGROUND_TRACK, FINALE_TRACK, CAMP_TRACK } from '../festival-music.mjs';
+import { createHash } from 'node:crypto';
+import { build } from 'esbuild';
+import { mkdir, copyFile, readFile, writeFile, cp, rm } from 'node:fs/promises';
+const kitLayout=JSON.parse(await readFile('assets/models/layout.json','utf8'));
+kitLayout.modelRevisions={};
+for(const name of ['tent_kit','props_kit','player_jam','crowd_kit','world_dressing'])kitLayout.modelRevisions[name]=createHash('sha256').update(await readFile(`assets/models/${name}.glb`)).digest('hex').slice(0,12);
+await writeFile('assets/models/layout.json',JSON.stringify(kitLayout,null,2)+'\n');
+await build({entryPoints:['engine-source.mjs'],bundle:true,format:'iife',target:['es2022'],minify:true,outfile:'engine.js',legalComments:'eof'});
+await mkdir('dist',{recursive:true});
+const engineRevision=createHash('sha256').update(await readFile('engine.js')).digest('hex').slice(0,12);
+const page=(await readFile('skills-jam-3d.html','utf8')).replace(/src="engine\.js(?:\?v=[^"]*)?"/,`src="engine.js?v=${engineRevision}"`);
+await writeFile('skills-jam-3d.html',page);
+await writeFile('dist/index.html',page);
+await copyFile('engine.js','dist/engine.js');
+await copyFile('festival-play.css','dist/festival-play.css');
+await rm('dist/assets',{recursive:true,force:true});
+await cp('assets','dist/assets',{recursive:true,filter:src=>!/(skills-jam-2026\.(jpe?g|png)|\.DS_Store)$/i.test(src)&&!src.endsWith('/art-direction/README.md')});
+// Ship only the playable soundtrack copies, keeping source uploads out of the bundle.
+await rm('dist/audio',{recursive:true,force:true});
+await mkdir('dist/audio/records',{recursive:true});
+for(const track of [BACKGROUND_TRACK,FINALE_TRACK,CAMP_TRACK,...RECORD_TRACKS])await copyFile(track.src,'dist/'+track.src);
+await writeFile('dist/THREE-LICENSE.txt',await readFile('node_modules/three/LICENSE','utf8'));
+console.log('Built Three.js festival with all local assets.');

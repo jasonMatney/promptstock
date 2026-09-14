@@ -1,0 +1,13 @@
+import {readFile,writeFile} from 'node:fs/promises';
+let page=await readFile('skills-jam-3d.html','utf8');page=page.replace('<head>','<head><base href="/">');page=page.replaceAll('localStorage.setItem(','reviewStorage.setItem(').replaceAll('localStorage.getItem(','reviewStorage.getItem(');page=page.replace('<script>','<script>const reviewStorage={getItem:()=>null,setItem:()=>{}};');
+page=page.replace('setupJamReview();',`setupJamReview();
+const review=document.createElement('div');review.style='position:fixed;right:12px;top:170px;z-index:30;background:#fff2d7;padding:8px;max-width:260px;font:12px sans-serif';review.innerHTML='<button id="lakeStart">Review canoe</button><button id="lakeRow">Simulate full crossing</button><button id="lakeMeet">Walk to Sasquatch</button><button id="lakeBed">Walk to sleeping bag</button><button id="qaLakeGolden">Review golden roast</button><button id="lakeNotice">Review new notice</button><button id="lakeCapture">Save trip frame</button><output id="lakeProof"></output>';document.body.append(review);
+review.querySelector('#lakeNotice').onclick=()=>{engine.play.exit(false);showPoster();};
+review.querySelector('#lakeStart').onclick=()=>engine.play.open('canoe');
+review.querySelector('#lakeRow').onclick=()=>{const a=engine.play.adventure;if(a.journey?.phase==='paddle')for(let i=0;i<900;i++){a.journey.stroke();a.journey.step(.1);}};
+review.querySelector('#lakeMeet').onclick=()=>{const a=engine.play.adventure;if(a.journey?.phase==='meet')a.walker.position.set(2,.45,0);};
+review.querySelector('#lakeBed').onclick=()=>{const a=engine.play.adventure;if(a.journey?.phase==='bed')a.walker.position.set(-4.4,.45,-2);};
+review.querySelector('#qaLakeGolden').onclick=()=>{const j=engine.play.adventure.journey;if(j?.phase==='roast'){j.fresh();j.held=true;for(let i=0;i<60;i++)j.step(.1);j.held=false;}};
+review.querySelector('#lakeCapture').onclick=async()=>{const png=await new Promise(r=>engine.canvas.toBlob(r,'image/png'));await fetch('/__kit_capture/play_entrance',{method:'POST',body:png});};
+setInterval(()=>{const a=engine.play.adventure;review.querySelector('#lakeProof').textContent='LOCAL ONLY · '+(a.journey?.phase||'festival')+' · '+(a.journey?.distance.toFixed(1)||0)+' m · '+engine.play.metrics().drawCalls+' calls · '+Math.round(engine.play.metrics().triangles/1000)+'k triangles';},500);
+`);await writeFile('tests/fixtures/lake-preview.html',page);

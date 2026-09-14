@@ -1,0 +1,558 @@
+{
+  "units": "metres",
+  "up": "Y",
+  "playerEyeHeight": 1.82,
+  "controllerRadius": 0.32,
+  "placements": [
+    {
+      "id": "ai",
+      "library": "tent_kit",
+      "asset": "tent_ai",
+      "position": [
+        -16,
+        0,
+        0
+      ],
+      "interactive": "ai"
+    },
+    {
+      "id": "maker",
+      "library": "tent_kit",
+      "asset": "tent_maker",
+      "position": [
+        0,
+        0,
+        -4
+      ],
+      "interactive": "maker"
+    },
+    {
+      "id": "aid",
+      "library": "tent_kit",
+      "asset": "tent_aid",
+      "position": [
+        16,
+        0,
+        0
+      ],
+      "interactive": "aid"
+    },
+    {
+      "id": "swap",
+      "library": "tent_kit",
+      "asset": "tent_swap",
+      "position": [
+        -17,
+        0,
+        16
+      ],
+      "interactive": "swap"
+    },
+    {
+      "id": "news",
+      "library": "tent_kit",
+      "asset": "newsstand",
+      "position": [
+        17,
+        0,
+        15
+      ],
+      "interactive": "news"
+    },
+    {
+      "id": "hero",
+      "library": "player_jam",
+      "asset": "player_jam",
+      "position": [
+        -4.2,
+        0,
+        24
+      ],
+      "rotation": 0.25,
+      "clip": "kick"
+    },
+    {
+      "id": "kickball",
+      "library": "props_kit",
+      "asset": "kickball_globe",
+      "position": [
+        -3.9,
+        0.62,
+        24.88
+      ],
+      "interactive": "kick"
+    },
+    {
+      "id": "record_display",
+      "library": "props_kit",
+      "asset": "record_table",
+      "position": [
+        11,
+        0,
+        26
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "crate_0",
+      "library": "props_kit",
+      "asset": "vinyl_crate",
+      "position": [
+        10.45,
+        0.89,
+        26
+      ]
+    },
+    {
+      "id": "crate_1",
+      "library": "props_kit",
+      "asset": "vinyl_crate",
+      "position": [
+        11,
+        0.89,
+        26
+      ]
+    },
+    {
+      "id": "crate_2",
+      "library": "props_kit",
+      "asset": "vinyl_crate",
+      "position": [
+        11.549999999999999,
+        0.89,
+        26
+      ]
+    },
+    {
+      "id": "record_communicate",
+      "library": "props_kit",
+      "asset": "record_communicate",
+      "position": [
+        10.45,
+        1.18,
+        26.08
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "record_solve",
+      "library": "props_kit",
+      "asset": "record_solve",
+      "position": [
+        11,
+        1.18,
+        26.08
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "record_create",
+      "library": "props_kit",
+      "asset": "record_create",
+      "position": [
+        11.549999999999999,
+        1.18,
+        26.08
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "record_connect",
+      "library": "props_kit",
+      "asset": "record_connect",
+      "position": [
+        10.45,
+        1.18,
+        25.959999999999997
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "record_stay_curious",
+      "library": "props_kit",
+      "asset": "record_stay_curious",
+      "position": [
+        11,
+        1.18,
+        25.959999999999997
+      ],
+      "interactive": "records"
+    },
+    {
+      "id": "robot",
+      "library": "props_kit",
+      "asset": "first_aid_robot",
+      "position": [
+        15.3,
+        0,
+        2.05
+      ],
+      "interactive": "aid"
+    },
+    {
+      "id": "dog",
+      "library": "crowd_kit",
+      "asset": "golden_retriever",
+      "position": [
+        -10,
+        0,
+        26
+      ],
+      "rotation": 0.6,
+      "interactive": "dog"
+    },
+    {
+      "id": "guest_0",
+      "library": "crowd_kit",
+      "asset": "crowd_1",
+      "position": [
+        -7,
+        0,
+        -14
+      ],
+      "rotation": -0.8
+    },
+    {
+      "id": "guest_1",
+      "library": "crowd_kit",
+      "asset": "crowd_2",
+      "position": [
+        -4.3,
+        0,
+        -16
+      ],
+      "rotation": -0.4
+    },
+    {
+      "id": "guest_2",
+      "library": "crowd_kit",
+      "asset": "crowd_3",
+      "position": [
+        -1.5999999999999996,
+        0,
+        -14
+      ],
+      "rotation": 0
+    },
+    {
+      "id": "guest_3",
+      "library": "crowd_kit",
+      "asset": "crowd_4",
+      "position": [
+        1.1000000000000014,
+        0,
+        -16
+      ],
+      "rotation": 0.4
+    },
+    {
+      "id": "guest_4",
+      "library": "crowd_kit",
+      "asset": "crowd_5",
+      "position": [
+        3.8000000000000007,
+        0,
+        -14
+      ],
+      "rotation": 0.8
+    },
+    {
+      "id": "guest_5",
+      "library": "crowd_kit",
+      "asset": "crowd_6",
+      "position": [
+        6.5,
+        0,
+        -16
+      ],
+      "rotation": 1.2000000000000002
+    },
+    {
+      "id": "cards",
+      "library": "props_kit",
+      "asset": "skill_cards_stand",
+      "position": [
+        -17,
+        0,
+        19.5
+      ]
+    },
+    {
+      "id": "bottle",
+      "library": "props_kit",
+      "asset": "water_bottle",
+      "position": [
+        -5,
+        0,
+        25
+      ]
+    },
+    {
+      "id": "pack_teal",
+      "library": "props_kit",
+      "asset": "backpack_teal",
+      "position": [
+        -5.4,
+        0,
+        25.1
+      ]
+    },
+    {
+      "id": "pack_rust",
+      "library": "props_kit",
+      "asset": "backpack_rust",
+      "position": [
+        -5.8,
+        0,
+        25.3
+      ]
+    },
+    {
+      "id": "jar_prompt",
+      "library": "props_kit",
+      "asset": "jar_prompt",
+      "position": [
+        -18.1,
+        1.21,
+        2.1
+      ]
+    },
+    {
+      "id": "jar_tool",
+      "library": "props_kit",
+      "asset": "jar_tool",
+      "position": [
+        -16,
+        1.21,
+        2.1
+      ]
+    },
+    {
+      "id": "jar_context",
+      "library": "props_kit",
+      "asset": "jar_context",
+      "position": [
+        -13.900000000000002,
+        1.21,
+        2.1
+      ]
+    },
+    {
+      "id": "kit_tree_oak",
+      "library": "world_dressing",
+      "asset": "tree_oak",
+      "position": [
+        -29,
+        0,
+        -23
+      ]
+    },
+    {
+      "id": "kit_tree_birch",
+      "library": "world_dressing",
+      "asset": "tree_birch",
+      "position": [
+        -11,
+        0,
+        -27
+      ]
+    },
+    {
+      "id": "kit_tree_pine",
+      "library": "world_dressing",
+      "asset": "tree_pine",
+      "position": [
+        29,
+        0,
+        -31
+      ]
+    },
+    {
+      "id": "grass_0",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -8,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_1",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -5,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_2",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -2,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_3",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        1,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_4",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        4,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_5",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        7,
+        0,
+        22
+      ]
+    },
+    {
+      "id": "grass_6",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -8,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_7",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -5,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_8",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -2,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_9",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        1,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_10",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        4,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_11",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        7,
+        0,
+        24
+      ]
+    },
+    {
+      "id": "grass_12",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -8,
+        0,
+        26
+      ]
+    },
+    {
+      "id": "grass_13",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -5,
+        0,
+        26
+      ]
+    },
+    {
+      "id": "grass_14",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        -2,
+        0,
+        26
+      ]
+    },
+    {
+      "id": "grass_15",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        1,
+        0,
+        26
+      ]
+    },
+    {
+      "id": "grass_16",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        4,
+        0,
+        26
+      ]
+    },
+    {
+      "id": "grass_17",
+      "library": "world_dressing",
+      "asset": "grass_tuft",
+      "position": [
+        7,
+        0,
+        26
+      ]
+    }
+  ],
+  "modelRevisions": {
+    "tent_kit": "ffd3c2058ee7",
+    "props_kit": "b58d8287860f",
+    "player_jam": "e2405b59da27",
+    "crowd_kit": "f0d060078ca7",
+    "world_dressing": "314d107cc0ec"
+  }
+}

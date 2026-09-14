@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+tests/fixtures/repair-preview.js
+tests/fixtures/mixer-preview.js
+tests/fixtures/records-preview.js
+tests/fixtures/concert-preview.html
+tests/fixtures/lake-preview.html
+
+dist/
+.openai/
