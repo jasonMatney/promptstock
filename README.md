@@ -36,4 +36,8 @@ This repository contains the current playable source and assets, not earlier dev
 
 ## Verification
 
-71 automated tests cover progression, model loading, animation, spatial separation, companion restoration, audio state and world navigation. Concert guests are spaced irregularly and shuffled independently of character-model batches. 36 extra flags and 12 extra satellite signs use shared render batches.
+75 automated tests cover progression, model loading, animation, spatial separation, companion restoration, audio state and world navigation. Concert guests are spaced irregularly and shuffled independently of character-model batches. 36 extra flags and 12 extra satellite signs use shared render batches.
+
+## Campsite and audio updates
+
+Campsite props now block walking, with sliding along obstacles and a reachable tent-entrance bedtime interaction. The island has instanced grass with clear paths. Playing music fades to silence over 700 ms before a replacement starts; pause and rapid selections cancel pending transitions.

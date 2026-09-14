@@ -10,3 +10,17 @@ test('leaving camp restores light and temporary actors without changing festival
 test('camp darkness restores the original daylight environment intensity',async()=>{
  const T=await import('three');const {FestivalEngine}=await import('../engine-source.mjs');const e=Object.create(FestivalEngine.prototype);Object.assign(e,{dusk:0,campNight:.9,lastLight:-1,environmentDusk:0,sun:new T.DirectionalLight(),hemi:new T.HemisphereLight(),fill:new T.DirectionalLight(),scene:new T.Scene(),fire:new T.PointLight(),stageLight:new T.PointLight(),sky:{material:{uniforms:{sunPosition:{value:new T.Vector3()}}}}});e.scene.fog=new T.FogExp2();e.updateLighting();assert.ok(e.scene.environmentIntensity<.05);assert.ok(e.sun.intensity<.5);e.campNight=0;e.updateLighting();assert.equal(e.scene.environmentIntensity,.20);assert.equal(e.sun.intensity,2.5);
 });
+test('camp obstacles block swept movement and both interactions remain reachable',async()=>{
+ const {campBlocked,moveInCamp,BED_APPROACH,CAMP_OBSTACLES}=await import('../camp-ground.mjs');
+ for(const o of CAMP_OBSTACLES)assert.equal(campBlocked(o.x,o.z),true);
+ const p={x:-5,z:4};moveInCamp(p,0,-12);assert.ok(p.z>-1.51);assert.equal(campBlocked(p.x,p.z),false);
+ const fire={x:-1,z:5};moveInCamp(fire,0,-10);assert.ok(fire.z>2.4);
+ // Grid flood-fill proves both approaches connect to the canoe landing.
+ const step=.2,queue=[[0,50]],seen=new Set(['0,50']);let met=false,bed=false;
+ for(let i=0;i<queue.length;i++){const [a,b]=queue[i],x=a*step,z=b*step-2;if(Math.hypot(x-2,z+2)<2.3)met=true;if(Math.hypot(x-BED_APPROACH.x,z-BED_APPROACH.z)<1.1)bed=true;
+ for(const [da,db]of [[1,0],[-1,0],[0,1],[0,-1]]){const aa=a+da,bb=b+db,key=aa+','+bb;if(!seen.has(key)&&!campBlocked(aa*step,bb*step-2)){seen.add(key);queue.push([aa,bb]);}}}
+ assert.ok(met&&bed);
+});
+test('camp grass is instanced and leaves obstacles and approaches clear',async()=>{
+ const T=await import('three'),{campGrass,campBlocked}=await import('../camp-ground.mjs');const g=campGrass(new T.Group()),m=new T.Matrix4(),p=new T.Vector3();assert.ok(g.isInstancedMesh&&g.count>1000);for(let i=0;i<g.count;i++){g.getMatrixAt(i,m);p.setFromMatrixPosition(m);assert.ok(!campBlocked(p.x,p.z,.54));assert.equal(p.y,Math.fround(.46));}
+});

@@ -38,7 +38,7 @@
 <div id="toast" role="status" aria-live="polite"></div><div id="fade"></div>
 <div id="modal" class="hidden"><section id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" tabindex="-1"><div class="panel-top"><div class="eyebrow" id="panelEyebrow">PROMPTSTOCK ’26</div><h2 id="panelTitle">Welcome</h2><button class="close-btn" id="closePanel" aria-label="Close panel">×</button></div><div id="panelBody"></div></section></div>
 <div id="error" class="hidden"><section><div class="sunmark">✺</div><h2>The festival needs a 3D-capable browser.</h2><p id="errorText"></p><p>Open the HTML website in a browser rather than a file preview. Here is a festival notice while we wait.</p><img id="errorPoster" alt="Please do not feed the algorithm: a raccoon festival notice"></section></div>
-<script src="engine.js?v=4109fc72019f"></script>
+<script src="engine.js?v=e5feca5794a6"></script>
 <script>const POSTER="assets/festival-notice.png";</script>
 <script>/* Promptstock — tiny, dependency-free WebGL 2 scene renderer. */
 'use strict';
@@ -386,7 +386,7 @@ function pauseTrack(){resumeTrack=false;getMusic().pause();}
 async function playTrack(){const ok=await getMusic().play();if(!ok&&trackStatus==='error')toast('Playback did not start. Press Sound to retry.');return ok;}
 function playRecord(name){resumeTrack=false;return getMusic().playRecord(name);}
 function musicControls(){return `<div class="section-heading">Festival soundtrack</div><p id="trackStatus" role="status">${esc(recordDisplay(customTrackName))} · ${trackStatus}</p><button class="btn dark wide" id="trackPlay">${soundOn?'Pause music':trackStatus==='error'?'Retry music':'Play music'}</button><label class="field"><span>Music volume</span><input id="trackVolume" type="range" min="0" max="1" step="0.05" value="${trackVolume}" aria-label="Music volume"></label><label class="field"><span>Choose a local track</span><input id="musicFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac"></label><p class="panel-foot">Each record plays its own song. Aspen Trail Drift welcomes you to the festival. Local replacements stay in this browser session.</p>`;}
-function bindMusic(){if(!$('musicFile'))return;$('musicFile').onchange=e=>{const file=e.target.files[0];if(file)prepareTrack(URL.createObjectURL(file),file.name);};$('trackPlay').onclick=toggleSound;$('trackVolume').oninput=e=>{getMusic().setVolume(e.target.value);};syncSoundBadge();}
+function bindMusic(){if(!$('musicFile'))return;$('musicFile').onchange=e=>{const file=e.target.files[0];if(file){resumeTrack=false;getMusic().switchTo(URL.createObjectURL(file),file.name,{autoplay:getMusic().wantsPlay});}};$('trackPlay').onclick=toggleSound;$('trackVolume').oninput=e=>{getMusic().setVolume(e.target.value);};syncSoundBadge();}
 document.addEventListener('visibilitychange',()=>{
  if(!customTrack)return;if(document.hidden){const wasPlaying=soundOn||trackStatus==='loading';pauseTrack();resumeTrack=wasPlaying;}
  else if(resumeTrack){resumeTrack=false;playTrack();}
