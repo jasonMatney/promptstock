@@ -16,8 +16,17 @@ test('repair reopening uses the bench origin after the robot moved, and completi
 test('robot travels at bounded speed to the stage and saved repairs restore there',async()=>{
  const THREE=await import('three');const {FestivalReactions,ROBOT_ROUTE}=await import('../festival-reactions.mjs');
  function kit(){const instances=new Map([['robot',new THREE.Group()]]);instances.get('robot').position.set(15.3,0,2.05);return {instances,place(p){const o=new THREE.Group();o.position.fromArray(p.position);this.instances.set(p.id,o);}};}
- const k=kit(),reactions=new FestivalReactions(k);reactions.repaired(0);reactions.leaveBench();let previous=reactions.robot.position.clone();
+ const k=kit(),reactions=new FestivalReactions(k);reactions.repaired(0);reactions.leaveBench(true);let previous=reactions.robot.position.clone();
  for(let i=0;i<2400;i++){reactions.update(1/60,i/60,{});assert.ok(reactions.robot.position.distanceTo(previous)<.075);previous.copy(reactions.robot.position);}
  assert.ok(reactions.robot.position.distanceTo(new THREE.Vector3(...ROBOT_ROUTE.at(-1)))<.04);
  const restored=new FestivalReactions(kit(),{repaired:true});assert.deepEqual(restored.robot.position.toArray(),ROBOT_ROUTE.at(-1));assert.deepEqual(restored.robotHome.toArray(),[15.3,0,2.05]);
+});
+
+test('abandoning a new repair keeps a previously repaired robot at the clinic',async()=>{
+ const T=await import('three'),{FestivalReactions}=await import('../festival-reactions.mjs');
+ const robot=new T.Group();robot.position.set(15.3,0,2.05);const kit={instances:new Map([['robot',robot]]),place(p){const o=new T.Group();o.position.fromArray(p.position);this.instances.set(p.id,o);}};
+ const r=new FestivalReactions(kit,{repaired:true});r.beginRepair();assert.equal(r.badge.visible,false);r.leaveBench(false);
+ for(let i=0;i<600;i++)r.update(.1,i*.1,{});assert.deepEqual(robot.position.toArray(),[15.3,0,2.05]);assert.equal(r.robotRepaired,false);
+ r.repaired(61);r.leaveBench(true);r.update(.1,61,{});assert.ok(robot.position.distanceTo(r.robotHome)>0);
+ r.beginRepair();r.leaveBench(false);for(let i=0;i<20;i++)r.update(.1,62+i*.1,{});assert.deepEqual(robot.position.toArray(),[15.3,0,2.05]);
 });

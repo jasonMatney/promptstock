@@ -14,7 +14,8 @@ export class FestivalReactions {
  }
  celebrate(t,kind='success'){this.cheerStart=t;this.cheerUntil=t+(kind==='repair'?5:3);if(kind==='record'||kind==='finale')this.danceUntil=t+30;}
  repaired(t){this.robotRepaired=true;this.badge.visible=true;this.celebrate(t,'repair');}
- leaveBench(){if(!this.robotRepaired)return;this.routeIndex=0;if(this.reduced){this.robot.position.fromArray(ROBOT_ROUTE.at(-1));this.routeIndex=ROBOT_ROUTE.length;}}
+ beginRepair(){this.robotRepaired=false;this.routeIndex=undefined;this.badge.visible=false;this.robot.position.copy(this.robotHome);this.robot.rotation.set(0,0,0);}
+ leaveBench(completed=false){if(!completed||!this.robotRepaired)return;this.routeIndex=0;if(this.reduced){this.robot.position.fromArray(ROBOT_ROUTE.at(-1));this.routeIndex=ROBOT_ROUTE.length;}}
  turnBone(guest,name,angle,axis){const entry=guest.bones[name];if(!entry)return;const b=entry.b,parentQ=b.parent.getWorldQuaternion(new THREE.Quaternion()),rootQ=guest.o.getWorldQuaternion(new THREE.Quaternion());const localAxis=axis.clone().applyQuaternion(rootQ).applyQuaternion(parentQ.invert());b.quaternion.copy(entry.q).premultiply(new THREE.Quaternion().setFromAxisAngle(localAxis,angle));b.updateWorldMatrix(false,true);}
  update(dt,t,{activity,musicPlaying=false,finale=false}={}){
   const cheer=t<this.cheerUntil,dance=(t<this.danceUntil&&musicPlaying)||finale;
