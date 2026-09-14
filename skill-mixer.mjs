@@ -35,7 +35,15 @@ function pose(root,cache,name,angle,axis=V(0,0,1)){const item=cache[name];if(!it
 
 // Position a prop by its actual handle rather than its model origin.
 export function handAnchor(root,hand){return root.worldToLocal(hand.localToWorld(V(0,.055,0)));}
-export function alignGrip(object,anchor,grip){object.position.copy(anchor).sub(grip.clone().applyQuaternion(object.quaternion));}
+export function alignGrip(object,anchor,grip){object.position.copy(anchor).sub(grip.clone().multiply(object.scale).applyQuaternion(object.quaternion));}
+
+export function pourPoint(root,container,outlet,target,u){
+ const start=root.worldToLocal(container.localToWorld(outlet.clone()));
+ const point=start.clone().lerp(target,u);
+ // Gravity accelerates the downward fall instead of firing a straight jet.
+ point.y=start.y+(target.y-start.y)*u*u;
+ return point;
+}
 
 export class SkillMixer {
  constructor(engine,kit,{reduced=false,onComplete=()=>{},onWin=()=>{},onPour=()=>{}}={}){
@@ -67,7 +75,7 @@ export class SkillMixer {
   this.picnic=new THREE.Group();this.picnic.position.set(-1.5,0,-1);this.root.add(this.picnic);box(this.picnic,'Picnic table',[.9,.08,.6],[0,.5,0],wood);box(this.picnic,'Picnic leg',[.12,.5,.12],[0,.25,0],wood);
   this.picnicLamp=cylinder(this.picnic,'Picnic lantern',.085,.085,.15,[0,.63,0],material('#edc55e',{emissive:'#ffd76b',emissiveIntensity:0}));
   this.carried=new THREE.Group();this.root.add(this.carried);this.cup=new THREE.Group();this.carried.add(this.cup);cylinder(this.cup,'Cup',.062,.047,.115,[0,0,0],cream);cylinder(this.cup,'Water surface',.052,.052,.004,[0,.053,0],material('#6caaa8'));const cupHandle=new THREE.Mesh(new THREE.TorusGeometry(.035,.010,6,16),gold);cupHandle.position.x=.065;this.cup.add(cupHandle);
-  this.can=new THREE.Group();this.carried.add(this.can);cylinder(this.can,'Oversized watering can',.31,.29,.48,[0,0,0],teal);const spout=cylinder(this.can,'Can spout',.07,.09,.55,[.4,.06,0],teal);spout.rotation.z=-1.0;const handle=new THREE.Mesh(new THREE.TorusGeometry(.29,.04,6,20),gold);handle.position.set(-.22,.15,0);this.can.add(handle);
+  this.can=new THREE.Group();this.carried.add(this.can);this.can.scale.setScalar(.65);cylinder(this.can,'Oversized watering can',.31,.29,.48,[0,0,0],teal);const spout=cylinder(this.can,'Can spout',.07,.09,.55,[.4,.06,0],teal);spout.rotation.z=-1.0;const handle=new THREE.Mesh(new THREE.TorusGeometry(.29,.04,6,20),gold);handle.position.set(-.22,.15,0);this.can.add(handle);
   this.blower=new THREE.Group();this.carried.add(this.blower);box(this.blower,'Leaf blower',[.3,.22,.24],[0,0,0],teal);const tube=cylinder(this.blower,'Blower tube',.075,.12,.7,[.37,0,0],dark);tube.rotation.z=Math.PI/2;
   this.flashlight=new THREE.Group();this.carried.add(this.flashlight);const lightBody=cylinder(this.flashlight,'Flashlight',.09,.065,.3,[0,0,0],teal);lightBody.rotation.z=Math.PI/2;const glow=new THREE.Mesh(new THREE.ConeGeometry(.22,.95,20,1,true),new THREE.MeshBasicMaterial({color:'#fff1a7',transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}));glow.rotation.z=Math.PI/2;glow.position.x=.65;this.flashlight.add(glow);
   this.drops=Array.from({length:9},()=>{const o=new THREE.Mesh(new THREE.SphereGeometry(.028,8,6),material('#7bdcdd'));this.root.add(o);return o;});
@@ -82,7 +90,7 @@ export class SkillMixer {
  pour(id){if(!this.active||this.pouring||this.puzzle.phase!=='choose'||!this.puzzle.add(id))return false;this.resultView=false;this.resetScene();this.pouring={index:this.puzzle.jars.findIndex(p=>p.id===id),time:0};this.onPour();this.say('Pouring '+this.puzzle.jars[this.pouring.index].name.toLowerCase()+'…');this.sync();return true;}
  run(){if(this.pouring||!this.active)return false;const outcome=this.puzzle.run();if(!outcome)return false;this.elapsed=0;this.resetScene();this.say('Let’s see what happens…');this.sync();return true;}
  next(){if(!this.active||!this.puzzle.next())return false;if(this.puzzle.phase==='complete'){if(!this.completed){this.completed=true;this.sync();this.onComplete();}}else this.refreshChallenge();return true;}
- camera(){const narrow=this.e.camera.aspect<.75,k=this.reveal||0;const start=V(0,narrow?4.2:3.6,narrow?10.0:7.65),end=V(.15,2.65,narrow?7.2:5.4);this.e.setCamera(start.lerp(end,k).toArray(),V(0,1,1.2).lerp(V(.25,.85,-.25),k).toArray());this.workbench.visible=k<.45;}
+ camera(){const narrow=this.e.camera.aspect<.75,k=this.reveal||0,watering=this.puzzle.index===0&&this.puzzle.outcome&&this.puzzle.outcome!=='success';const start=V(0,narrow?4.2:3.6,narrow?10.0:7.65),end=V(watering?-.4:.15,2.65,narrow?7.2:watering?6:5.4);this.e.setCamera(start.lerp(end,k).toArray(),V(0,1,1.2).lerp(V(watering?-.3:.25,.85,-.25),k).toArray());this.workbench.visible=k<.45;}
  point(e){const r=this.e.canvas.getBoundingClientRect();this.pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);this.ray.setFromCamera(this.pointer,this.e.camera);}
  down(e){if(!this.active||this.pouring||this.puzzle.phase!=='choose'||e.button!==0)return;this.point(e);const hit=this.ray.intersectObjects(this.jars,true)[0];if(!hit)return;let node=hit.object;while(node&&node.userData.jarIndex===undefined)node=node.parent;if(!node)return;this.dragIndex=node.userData.jarIndex;this.dragId=e.pointerId;this.dragStart=[e.clientX,e.clientY];this.dragged=false;this.e.canvas.setPointerCapture(e.pointerId);e.preventDefault();e.stopImmediatePropagation();}
  move(e){if(this.dragId!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();if(Math.hypot(e.clientX-this.dragStart[0],e.clientY-this.dragStart[1])>5)this.dragged=true;if(!this.dragged)return;this.point(e);if(this.ray.ray.intersectPlane(this.plane,this.hit))this.jars[this.dragIndex].position.set(THREE.MathUtils.clamp(this.hit.x,-2,2),THREE.MathUtils.clamp(this.hit.y-.2,.8,2.6),2.5);}
@@ -97,13 +105,19 @@ export class SkillMixer {
   this.bubbles.forEach((o,i)=>{o.visible=running&&!this.reduced&&this.elapsed<1.3;o.position.set(Math.sin(t*3+i)*.26,1.7+((t*1.5+i*.13)%1)*.55,1.95+Math.cos(t*3+i)*.22);});
  }
  animateResult(elapsed,t){const out=this.puzzle.outcome,index=this.puzzle.index,success=out==='success',act=THREE.MathUtils.smoothstep(elapsed,1.25,3.25),gesture=THREE.MathUtils.smoothstep(elapsed,3.25,4.25),nod=this.reduced?0:Math.sin((elapsed-3.25)*3)*Math.sin(Math.PI*gesture)*.07;
-  const target=index===0?(out==='missing'||out==='context'?V(-1.8,0,.05):V(-.15,0,.05)):index===1?V(-.4,0,-.25):V(-.6,0,-.2);
-  this.helper.position.lerpVectors(V(-1.15,0,.05),target,act);this.helper.rotation.y=Math.sin(Math.PI*act)*.25;this.helper.position.y=0;this.guest.position.y=0;
+  const watering=index===0&&!success;
+  const target=index===0?(watering?V(-2.05,0,.5):V(-.15,0,.05)):index===1?V(-.4,0,-.25):V(-.6,0,-.2);
+  this.helper.position.lerpVectors(V(-1.15,0,.05),target,act);this.helper.rotation.y=watering?.5*act:Math.sin(Math.PI*act)*.25;this.helper.position.y=0;this.guest.position.y=0;
   this.helper.updateWorldMatrix(true,true);this.guest.updateWorldMatrix(true,true);
   const stride=this.reduced?0:Math.sin(act*Math.PI*4)*Math.sin(act*Math.PI)*.22;
   pose(this.helper,this.helperBones,'thigh_L',stride,V(1,0,0));pose(this.helper,this.helperBones,'thigh_R',-stride,V(1,0,0));
   pose(this.helper,this.helperBones,'shin_L',Math.max(0,-stride)*.5,V(1,0,0));pose(this.helper,this.helperBones,'shin_R',Math.max(0,stride)*.5,V(1,0,0));
   pose(this.helper,this.helperBones,'upper_arm_R',-.45*act*(1-gesture*.65),V(1,0,0));pose(this.helper,this.helperBones,'forearm_R',-.8*act*(1-gesture*.65),V(1,0,0));
+  if(watering){
+   pose(this.helper,this.helperBones,'upper_arm_R',.45*act);
+   pose(this.helper,this.helperBones,'upper_arm_R',-.5*act,V(1,0,0));
+   pose(this.helper,this.helperBones,'forearm_R',-.8*act,V(1,0,0));
+  }
   pose(this.helper,this.helperBones,'head',nod,V(1,0,0));
   // The receiving arm keeps a drink upright or lets a bag hang at the guest's side.
   if(success){const cup=index===0,bag=index===1;pose(this.guest,this.guestBones,'upper_arm_L',cup?-.42*gesture:bag?-.08*gesture:-.2*gesture,V(1,0,0));pose(this.guest,this.guestBones,'upper_arm_L',bag?-.22*gesture:-.10*gesture);pose(this.guest,this.guestBones,'forearm_L',cup?-.98*gesture:bag?-.12*gesture:-.6*gesture,V(1,0,0));
@@ -114,10 +128,11 @@ export class SkillMixer {
   const to=this.guestBones.hand_L?handAnchor(this.root,this.guestBones.hand_L.bone):this.guest.position.clone().add(V(-.36,.94,.24));
   this.carried.visible=elapsed>1.25;this.carried.rotation.set(0,this.helper.rotation.y*(1-gesture),0);
   const anchor=from.clone();if(index===0&&success)anchor.lerp(to,gesture);
-  alignGrip(this.carried,anchor,index===0&&out!=='tool'?V(.088,0,0):V(0,0,0));
+  if(watering)this.carried.rotation.set(0,0,(out==='tool'?-.95:1.0)*gesture);
+  alignGrip(this.carried,anchor,index===0?(out==='tool'?V(-.33,.10,0):V(.088,0,0)):V(0,0,0));
   this.cup.visible=index===0&&out!=='tool';this.can.visible=index===0&&out==='tool';this.blower.visible=index===1&&out==='tool';this.flashlight.visible=index===2;
   if(index===1&&elapsed>1.8&&out!=='tool'){const pack=success?this.tealPack:this.redPack;pack.rotation.set(0,this.helper.rotation.y*(1-gesture),0);const carry=from.clone();if(success)carry.lerp(to,gesture);alignGrip(pack,carry,V(0,.525,0));const pickup=THREE.MathUtils.smoothstep(elapsed,1.8,2.5),home=success?V(.1,0,-.5):V(-.65,0,-.6);pack.position.lerpVectors(home,pack.position.clone(),pickup);}
-  this.drops.forEach((o,i)=>{o.visible=index===0&&!success&&gesture>.3&&!this.reduced;const waterTarget=out==='missing'||out==='context'?V(-1.35,.35,-.7):V(.55,.02,.4);o.position.copy(this.carried.position).lerp(waterTarget,(t*1.6+i*.1)%1).add(V(i*.006,0,0));if(index===1&&out==='tool'){o.visible=gesture>.1&&!this.reduced;o.material.color.set('#cab973');o.scale.set(1,.25,1.7);o.position.set(.1+((t*1.2+i*.16)%1)*1.2,.1+Math.abs(Math.sin(t*4+i))*.35,-.1+i*.03);}else{o.material.color.set('#7bdcdd');o.scale.set(1,1,1);}});
+  this.drops.forEach((o,i)=>{o.visible=index===0&&!success&&gesture>.3&&!this.reduced;const container=out==='tool'?this.can:this.cup,outlet=out==='tool'?V(.4+Math.sin(1)*.275,.06+Math.cos(1)*.275,0):V(-.058,.057,0);o.position.copy(pourPoint(this.root,container,outlet,V(-1.22,.35,-.58),(t*1.3+i/9)%1));if(index===1&&out==='tool'){o.visible=gesture>.1&&!this.reduced;o.material.color.set('#cab973');o.scale.set(1,.25,1.7);o.position.set(.1+((t*1.2+i*.16)%1)*1.2,.1+Math.abs(Math.sin(t*4+i))*.35,-.1+i*.03);}else{o.material.color.set('#7bdcdd');o.scale.set(1,1,1);}});
   if(index===2){this.flashlight.visible=out==='tool';this.stageBulbs.forEach(b=>b.material.emissiveIntensity=success&&gesture>.2?1.5:0);this.picnicLamp.material.emissiveIntensity=(out==='context'||out==='missing')&&gesture>.2?2:0;}
  }
  close(){this.cancel();this.active=false;this.root.visible=false;this.pouring=null;this.stream.visible=false;this.ui=null;this.e.canvas.style.touchAction='';this.e.canvas.style.cursor='';}

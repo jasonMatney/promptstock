@@ -24,3 +24,14 @@ test('cup and backpack grips follow a transformed palm while their bodies stay u
   assert.ok(new T.Vector3(0,1,0).applyQuaternion(prop.getWorldQuaternion(new T.Quaternion())).distanceTo(new T.Vector3(0,1,0))<1e-7);
  }
 });
+
+test('pouring follows the tilted scaled outlet and falls into the pot',async()=>{
+ const T=await import('three');const {pourPoint}=await import('../skill-mixer.mjs');
+ const root=new T.Group(),carry=new T.Group(),can=new T.Group();root.add(carry);carry.add(can);
+ root.position.set(8,0,-4);root.rotation.y=.7;carry.position.set(-1.8,1.1,-.5);carry.rotation.z=-.95;can.scale.setScalar(.65);
+ const outlet=new T.Vector3(.4+Math.sin(1)*.275,.06+Math.cos(1)*.275,0),target=new T.Vector3(-1.22,.35,-.58);
+ const start=pourPoint(root,can,outlet,target,0),end=pourPoint(root,can,outlet,target,1),mid=pourPoint(root,can,outlet,target,.5);
+ assert.ok(start.distanceTo(root.worldToLocal(can.localToWorld(outlet.clone())))<1e-7);
+ assert.ok(start.distanceTo(carry.position)>.3);assert.ok(end.distanceTo(target)<1e-7);
+ assert.ok(start.y>mid.y&&mid.y>end.y);assert.ok(start.y-mid.y<mid.y-end.y);
+});
