@@ -9,10 +9,14 @@
     "review:repair": "esbuild tests/fixtures/repair-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/repair-preview.js",
     "review:mixer": "esbuild tests/fixtures/mixer-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/mixer-preview.js",
     "review:records": "esbuild tests/fixtures/records-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/records-preview.js",
-    "smoke": "node scripts/smoke-game-debug.mjs"
+    "smoke": "node scripts/smoke-game-debug.mjs",
+    "smoke:browser": "node scripts/smoke-browser.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",
     "three": "0.186.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
   }
 }
