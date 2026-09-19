@@ -16,7 +16,8 @@ import {
 } from '../game-debug.mjs';
 
 const required = [
-  'listLocations', 'listCameras', 'teleport', 'go', 'setCamera',
+  'listLocations', 'listCameras', 'listNpcs', 'getNpc', 'focusNpc',
+  'teleport', 'go', 'setCamera',
   'getPlayerState', 'getRenderStats', 'setQuality',
   'capture', 'screenshot', 'captureAll', 'screenshotSuite',
 ];
@@ -51,13 +52,15 @@ for (const name of required) {
     throw new Error(`gameDebug missing ${name}`);
   }
 }
-if (api.version !== '1.1.0') throw new Error(`unexpected version ${api.version}`);
+if (api.version !== '1.2.0') throw new Error(`unexpected version ${api.version}`);
 if (typeof loadQualityPreference !== 'function') throw new Error('loadQualityPreference missing');
 if (typeof saveQualityPreference !== 'function') throw new Error('saveQualityPreference missing');
 if (typeof applyEngineQuality !== 'function') throw new Error('applyEngineQuality missing');
 
 const cams = api.listCameras();
 if (!cams.includes('festival_stage_wide')) throw new Error('listCameras incomplete');
+if (!api.getNpc('maya')?.kitId) throw new Error('getNpc(maya) missing');
+if (api.listNpcs({ featuredOnly: true }).length < 3) throw new Error('listNpcs thin');
 const shot = api.capture('camp');
 if (!String(shot).startsWith('data:image/png')) throw new Error('capture failed');
 const suite = api.captureAll(['pier']);
@@ -67,5 +70,6 @@ console.log('smoke-game-debug: ok', {
   version: api.version,
   cameras: cams.length,
   locations: api.listLocations().length,
+  npcs: api.listNpcs().length,
   qualityKey: QUALITY_STORAGE_KEY,
 });

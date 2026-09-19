@@ -76,9 +76,17 @@ test('attachGameDebug exposes the console API shape on a mock host',async()=>{
   Object.defineProperty(globalThis,'localStorage',{value:store,configurable:true});
   try{
     const api=attachGameDebug(host);
-    assert.equal(api.version,'1.1.0');
+    assert.equal(api.version,'1.2.0');
     assert.deepEqual(api.listLocations(),DEFAULT_LOCATIONS);
     assert.deepEqual(api.listCameras().sort(),Object.keys(CAMERA_PRESETS).sort());
+
+    const npcs=api.listNpcs({featuredOnly:true});
+    assert.ok(npcs.length>=3);
+    assert.equal(api.getNpc('maya').kitId,'guest_0');
+    assert.equal(api.getNpc('guest_0').id,'maya');
+    assert.equal(typeof api.focusNpc,'function');
+    assert.equal(typeof api.npcScheduleStatus,'function');
+    assert.equal(api.npcScheduleStatus().concert_seat.live,true);
 
     api.go('stage');
     assert.deepEqual(teleports,['stage']);

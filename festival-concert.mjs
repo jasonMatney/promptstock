@@ -1,4 +1,5 @@
 import {concertSeats,FEATURED_SEATS} from './concert-layout.mjs';
+import {featuredConcertKitIds} from './festival-npcs.mjs';
 import * as THREE from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 
@@ -87,7 +88,7 @@ export class FestivalConcert {
   const contact=this.e.contactShadows?.[0]?.mesh;
   if(contact&&!this.audienceContacts){const material=contact.material.clone();material.vertexShader=material.vertexShader.replace('modelViewMatrix*vec4(position,1.)','modelViewMatrix*instanceMatrix*vec4(position,1.)');this.audienceContacts=new THREE.InstancedMesh(contact.geometry,material,this.seats.length);this.audienceContacts.name='Concert audience contact shadows';this.root.add(this.audienceContacts);}
   if(this.audienceContacts){for(let i=0;i<this.seats.length;i++){const p=this.seats[i].p;this.crowdMatrix.makeScale(.75,1,.6).setPosition(p.x,.027,p.z);this.audienceContacts.setMatrixAt(i,this.crowdMatrix);}this.audienceContacts.instanceMatrix.needsUpdate=true;this.audienceContacts.computeBoundingSphere();}
-  const ids=['guest_0','guest_1','guest_2','guest_3','guest_4','guest_5','repair_helper_0','repair_helper_1','hero','robot','dog'];
+  const ids=featuredConcertKitIds();
   ids.forEach((id,i)=>{const o=this.kit.instances.get(id);if(!o)return;this.saved.push(snapshot(o));o.visible=true;o.position.set(FEATURED_SEATS[i][0],0,FEATURED_SEATS[i][1]);o.rotation.set(0,Math.PI,0);const r=rig(o);r.base=o.position.clone();r.id=id;if(i<9){r.prop=this.prop(i%3===1?'sign':'flag',i);r.hand=Object.values(r.bones).find(e=>e.b.name.startsWith('hand_R'))?.b;}this.rigs.push(r);});
   // Hide old stage musicians and their instruments, while retaining the existing stage itself.
   this.legacy=[];this.hiddenNodes=[];for(const b of this.e.batches||[]){if(!b.mesh?.isInstancedMesh)continue;const original=b.mesh.instanceMatrix.array.slice();let changed=false;for(let i=0;i<b.nodes.length;i++){const m=new THREE.Matrix4().fromArray(original,i*16),p=V().setFromMatrixPosition(m);if(p.z<-33&&p.z>-36.8&&p.y>1.3&&p.y<3.4&&Math.abs(p.x)<5){this.hiddenNodes.push(b.nodes[i]);b.nodes[i].concertHidden=true;m.scale(V(0,0,0));b.mesh.setMatrixAt(i,m);changed=true;}}if(changed){b.mesh.instanceMatrix.needsUpdate=true;this.legacy.push({o:b.mesh,original});}}

@@ -31,6 +31,8 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `game-debug.mjs`: `window.gameDebug` console API (teleport, cameras, quality, screenshots); attached after boot.
 - `festival-play.mjs`: activities and progression.
 - `festival-concert.mjs` and `concert-layout.mjs`: shuffled audience, reserved companion positions, instanced flags and satellite signs.
+- `festival-npcs.mjs`: data-driven NPC registry (featured companions + crowd groups/roles/schedules); see file header for how to add an NPC.
+- `festival-crowd.mjs`: background guest positions generated from `CROWD_GROUPS` in the NPC registry.
 - `jam-kit.mjs`: GLB loading, batching and baked character poses.
 - `lake-adventure.mjs`: canoe and camping experience.
 - `assets/models`: game-ready GLBs; `assets/concert/CREDITS.md`: satellite-image credits.
@@ -56,6 +58,9 @@ Browser `localStorage` keys (hostname-scoped; see `passport-store.mjs` and `game
 After the world boots, open the browser console:
 
 ```js
+gameDebug.listNpcs()
+gameDebug.getNpc('maya')
+gameDebug.focusNpc('maya')  // stand near + look at
 gameDebug.listCameras()
 gameDebug.setQuality('low')   // persists to skillsjam.quality.v1
 gameDebug.capture('pier')     // PNG data URL (preserveDrawingBuffer is on)
