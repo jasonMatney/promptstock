@@ -2,6 +2,7 @@
  * Lightweight browser debug surface for Promptstock.
  * Attach after the world boots: window.attachGameDebug(window.skillsJam)
  * Then use window.gameDebug from the console.
+ * NPC helpers: listNpcs(), getNpc(id), focusNpc(id) — see festival-npcs.mjs.
  *
  * localStorage keys used by the jam (passport/discovery helpers: passport-store.mjs):
  * - skillsjam.world.passport.v1 — stamps / pills / record / dog
@@ -9,6 +10,13 @@
  * - skillsjam.round.v1 — mini-game round state (festival-play)
  * - skillsjam.quality.v1 — rendering quality preference ('high' | 'low')
  */
+
+import {
+  listNpcs as registryListNpcs,
+  getNpc as registryGetNpc,
+  npcHomePosition,
+  scheduleStatus,
+} from './festival-npcs.mjs';
 
 /** Persist rendering quality ('high' | 'low'). */
 export const QUALITY_STORAGE_KEY = 'skillsjam.quality.v1';
@@ -118,7 +126,7 @@ export function attachGameDebug(host) {
   };
 
   const api = {
-    version: '1.1.0',
+    version: '1.2.0',
 
     /** Spot / district ids you can teleport to. */
     listLocations() {
@@ -130,6 +138,69 @@ export function attachGameDebug(host) {
     /** Named camera presets. */
     listCameras() {
       return Object.keys(CAMERA_PRESETS);
+    },
+
+    /** Data-driven NPC registry (featured + crowd groups). */
+    listNpcs(opts) {
+      if (typeof host.listNpcs === 'function') return host.listNpcs(opts);
+      return registryListNpcs(opts);
+    },
+
+    /** Lookup by friendly id or kitId (e.g. maya or guest_0). */
+    getNpc(id) {
+      if (typeof host.getNpc === 'function') return host.getNpc(id);
+      return registryGetNpc(id);
+    },
+
+    /** Schedule tag live/stub map. */
+    npcScheduleStatus() {
+      return scheduleStatus();
+    },
+
+    /**
+     * Focus / teleport near an NPC. Uses live kit instance position when available,
+     * otherwise registry home / location approx. Returns {id, kitId, position}.
+     */
+    focusNpc(id) {
+      const npc = api.getNpc(id);
+      if (!npc) {
+        throw new Error(`Unknown NPC "${id}". Try gameDebug.listNpcs().map(n => n.id)`);
+      }
+      clearDebugCamera();
+      const kitId = npc.kitId || npc.id;
+      let position = null;
+      const inst = host.kit?.instances?.get?.(kitId) || host.engine?.jamKit?.instances?.get?.(kitId);
+      if (inst?.position) {
+        position = [inst.position.x, inst.position.y, inst.position.z];
+      } else {
+        position = npcHomePosition(npc);
+      }
+      if (!position) {
+        throw new Error(`NPC "${npc.id}" has no home position`);
+      }
+      // Stand a couple metres south of the NPC and look toward them.
+      const stand = [position[0], 1.82, position[2] + 3.2];
+      const yaw = Math.atan2(position[0] - stand[0], position[2] - stand[2]);
+      if (typeof host.setView === 'function') {
+        host.setView(stand, yaw, 0.05);
+      } else if (typeof host.teleport === 'function' && npc.location) {
+        // Fall back: teleport to mapped spot if setView is unavailable.
+        const loc = npc.location === 'festival_stage' ? 'stage'
+          : npc.location === 'reboot_clinic' ? 'aid'
+          : npc.location === 'dog_lawn' ? 'dog'
+          : npc.location === 'meadow' ? 'kick'
+          : npc.location;
+        try { host.teleport(loc); } catch { /* ignore unknown spot */ }
+      } else {
+        throw new Error('host.setView / teleport not available for focusNpc');
+      }
+      if (host.engine?.setCamera) {
+        const eye = [stand[0], 1.82, stand[2]];
+        const target = [position[0], 1.2, position[2]];
+        host.engine.debugCamera = [eye.slice(), target.slice()];
+        host.engine.setCamera(eye, target);
+      }
+      return { id: npc.id, kitId, position, stand };
     },
 
     /** Teleport to a map destination or district id. */

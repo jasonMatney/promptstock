@@ -1,4 +1,9 @@
 import {EXTRA_FESTIVAL_GUESTS} from './festival-crowd.mjs';
+import {
+  NPC_REGISTRY, FEATURED_NPCS, CROWD_GROUPS, LOCATION_KEYS, SCHEDULE_TAGS,
+  listNpcs, getNpc, featuredConcertKitIds, generateBackgroundGuests,
+  assertNpcRegistry, scheduleStatus,
+} from './festival-npcs.mjs';
 import {recordLabel} from './festival-copy.mjs';
 import { FestivalMusic } from './festival-music.mjs';
 import { FestivalOcclusionPass, FestivalFinishPass } from './festival-occlusion.mjs';
@@ -93,4 +98,4 @@ export class FestivalEngine {
  project(point){const p=new THREE.Vector3(...point).project(this.camera);if(p.z>1)return null;return[(p.x*.5+.5)*innerWidth,(-p.y*.5+.5)*innerHeight,p.z];}
  async compile(){await this.renderer.compileAsync(this.scene,this.camera);}
 }
-if(typeof window!=='undefined'){window.FestivalCopy={recordLabel};window.FestivalCrowd={EXTRA_FESTIVAL_GUESTS};window.FestivalEngine=FestivalEngine;window.FestivalPlay=FestivalPlay;window.FestivalMusic=FestivalMusic;window.attachGameDebug=attachGameDebug;window.QUALITY_STORAGE_KEY=QUALITY_STORAGE_KEY;window.loadQualityPreference=loadQualityPreference;window.saveQualityPreference=saveQualityPreference;window.applyEngineQuality=applyEngineQuality;window.PassportStore={PASSPORT_STORAGE_KEY,DISCOVERY_STORAGE_KEY,ROUND_STORAGE_KEY,STAMP_IDS,PILL_IDS,RECORD_CHOICES,DISTRICT_IDS,emptyPassport,normalizePassport,loadPassport,savePassport,loadDiscoveries,saveDiscoveries};window.FestivalMapData={DESTINATIONS:MAP_DESTINATIONS,TOUR_ROUTE:MAP_TOUR_ROUTE,MAP_PANEL_IDS,destinationIds:mapDestinationIds,cloneDestination,listDestinations};}
+if(typeof window!=='undefined'){window.FestivalCopy={recordLabel};window.FestivalCrowd={EXTRA_FESTIVAL_GUESTS};window.FestivalNpcs={NPC_REGISTRY,FEATURED_NPCS,CROWD_GROUPS,LOCATION_KEYS,SCHEDULE_TAGS,listNpcs,getNpc,featuredConcertKitIds,generateBackgroundGuests,assertNpcRegistry,scheduleStatus};window.FestivalEngine=FestivalEngine;window.FestivalPlay=FestivalPlay;window.FestivalMusic=FestivalMusic;window.attachGameDebug=attachGameDebug;window.QUALITY_STORAGE_KEY=QUALITY_STORAGE_KEY;window.loadQualityPreference=loadQualityPreference;window.saveQualityPreference=saveQualityPreference;window.applyEngineQuality=applyEngineQuality;window.PassportStore={PASSPORT_STORAGE_KEY,DISCOVERY_STORAGE_KEY,ROUND_STORAGE_KEY,STAMP_IDS,PILL_IDS,RECORD_CHOICES,DISTRICT_IDS,emptyPassport,normalizePassport,loadPassport,savePassport,loadDiscoveries,saveDiscoveries};window.FestivalMapData={DESTINATIONS:MAP_DESTINATIONS,TOUR_ROUTE:MAP_TOUR_ROUTE,MAP_PANEL_IDS,destinationIds:mapDestinationIds,cloneDestination,listDestinations};}
