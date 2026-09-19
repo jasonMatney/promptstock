@@ -32,6 +32,7 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `festival-play.mjs`: activities and progression.
 - `festival-concert.mjs` and `concert-layout.mjs`: shuffled audience, reserved companion positions, instanced flags and satellite signs.
 - `festival-npcs.mjs`: data-driven NPC registry (featured companions + crowd groups/roles/schedules); see file header for how to add an NPC.
+- `npc-schedule.mjs`: free-roam schedule runner — maps tags (`watch_stage`, `visit_food_stall`, `talk_with_friends`, …) to locations/lingers; featured NPCs lerp via FestivalReactions homes; crowd groups share a phase (LOD). Pauses during the concert.
 - `festival-crowd.mjs`: background guest positions generated from `CROWD_GROUPS` in the NPC registry.
 - `jam-kit.mjs`: GLB loading (MeshoptDecoder), batching and baked character poses.
 - `lake-adventure.mjs`: canoe and camping experience.
@@ -54,6 +55,17 @@ Browser `localStorage` keys (hostname-scoped; see `passport-store.mjs` and `game
 
 85 automated tests cover progression, model loading, animation, spatial separation, companion restoration, audio state and world navigation. Concert guests are spaced irregularly and shuffled independently of character-model batches. 36 extra flags and 12 extra satellite signs use shared render batches.
 
+
+## NPC schedules
+
+Between concerts, featured companions and crowd groups cycle their `schedule` tags from `festival-npcs.mjs`:
+
+1. **Tag → behavior** (`npc-schedule.mjs` `TAG_BEHAVIORS`): target from `LOCATION_KEYS` (or home), linger seconds, optional facing (stage / inward / home).
+2. **Featured NPCs** walk by updating FestivalReactions home poses (same transform path used for cheer/dance). Hero, dog, and robot stay put so mini-games keep working.
+3. **Background groups** share one phase per `CROWD_GROUPS` entry; bound instanced guests get a cluster translate (no per-frame pathfinding across ~73 people).
+4. **Event-owned tags**: `concert_seat` (FestivalConcert seating) and `cheer` (celebration poses) are skipped in free-roam cycles.
+5. Concert open/close still snapshots and restores transforms; the runner pauses while the headliner is active.
+
 ## AI / console debug
 
 After the world boots, open the browser console:
@@ -62,6 +74,9 @@ After the world boots, open the browser console:
 gameDebug.listNpcs()
 gameDebug.getNpc('maya')
 gameDebug.focusNpc('maya')  // stand near + look at
+gameDebug.getNpcSchedule('maya')
+gameDebug.setNpcSchedule('maya', ['watch_stage', 'visit_food_stall'])
+gameDebug.advanceSchedule('maya')  // or advanceSchedule() for everyone
 gameDebug.listCameras()
 gameDebug.setQuality('low')   // persists to skillsjam.quality.v1
 gameDebug.capture('pier')     // PNG data URL (preserveDrawingBuffer is on)

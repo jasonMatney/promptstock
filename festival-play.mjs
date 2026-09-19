@@ -6,6 +6,7 @@ import {SkillMixer} from './skill-mixer.mjs';
 import {RobotRepair,REPAIR_PARTS} from './robot-repair.mjs';
 import {FestivalConcert} from './festival-concert.mjs';
 import {FestivalReactions} from './festival-reactions.mjs';
+import {NpcScheduleRunner} from './npc-schedule.mjs';
 import {KickBall,migrateRound,beginRound,ROUND_STEPS,finishActivity,nextActivity,finishRound,concertUnlocked} from './festival-simulation.mjs';
 const names={kick:'Kick the globe',records:'Spin a record',aid:'Help the robot',maker:'Build a useful skill',canoe:'Across the lake',finale:'Meet at the stage'};
 const records=['Communicate','Solve','Create','Connect','Stay curious'];
@@ -20,7 +21,7 @@ export class FestivalPlay {
   this.path=new THREE.Line(new THREE.BufferGeometry(),new THREE.LineDashedMaterial({color:'#185a56',dashSize:.16,gapSize:.12,depthTest:false}));this.path.renderOrder=5;this.root.add(this.path);this.marker.visible=this.path.visible=false;
   this.recordHomes=new Map(records.map(n=>{const o=this.kit.instances.get('record_'+n.toLowerCase().replaceAll(' ','_'));return[n,{o,p:o.position.clone(),q:o.quaternion.clone()}];}));
   this.deck=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.035,32),new THREE.MeshStandardMaterial({color:'#254c48',roughness:.7}));this.deck.position.set(11.75,.94,26.06);this.root.add(this.deck);
-  this.reactions=new FestivalReactions(this.kit,{reduced:this.reduced,repaired:this.state.robotRepaired});this.repair=new RobotRepair(engine,this.kit.instances.get('robot'),{home:this.reactions.robotHome,reduced:this.reduced,onFit:()=>this.h.chime(),onComplete:()=>{this.state.robotRepaired=true;this.reactions.repaired(this.clock);this.result('aid','Your friend is awake!');}});
+  this.reactions=new FestivalReactions(this.kit,{reduced:this.reduced,repaired:this.state.robotRepaired});this.schedule=new NpcScheduleRunner({reduced:this.reduced});this.schedule.bindCrowd(this.kit);this.repair=new RobotRepair(engine,this.kit.instances.get('robot'),{home:this.reactions.robotHome,reduced:this.reduced,onFit:()=>this.h.chime(),onComplete:()=>{this.state.robotRepaired=true;this.reactions.repaired(this.clock);this.result('aid','Your friend is awake!');}});
   this.adventure=new LakeAdventure(engine,this.kit,{reduced:this.reduced,getDusk:host.getDusk,setDusk:host.setDusk,playMusic:host.playCamp,endMusic:host.endCampMusic,musicState:host.musicState,toggleMusic:host.toggleMusic,onWake:()=>{this.state.overnights=(this.state.overnights||0)+1;this.save();this.exit(false);this.h.wakeAtFestival?.();}});
   this.mixer=new SkillMixer(engine,this.kit,{reduced:this.reduced,onPour:()=>this.h.chime(),onWin:()=>{this.h.chime();this.reactions.celebrate(this.clock);},onComplete:()=>this.result('maker','Three useful skills. Three happy outcomes!')});
   this.ui=document.createElement('section');this.ui.id='festivalPlay';this.ui.hidden=true;this.ui.setAttribute('aria-label','Festival activity');document.body.append(this.ui);
@@ -133,7 +134,7 @@ export class FestivalPlay {
   else if(this.active==='canoe')this.adventure.update(dt,time);
   else if(this.active==='finale'&&this.concert.active){const s=this.h.musicState?.()||{};const t=s.currentTime||0;this.concert.update(t,s.playing);const clock=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;this.ui.querySelector('#concertTime').textContent=clock(t)+' / '+clock(s.duration||194);this.ui.querySelector('#concertProgress').value=t;this.ui.querySelector('#concertProgress').max=s.duration||194;this.syncConcertAudio();}
  }
- ambient(t,dt){if(this.concert?.active)return;this.reactions.update(dt,t,{activity:this.active,musicPlaying:this.h.musicPlaying?.()||false,finale:this.active==='finale'});
+ ambient(t,dt){if(this.concert?.active)return;if(this.schedule){this.schedule.tick(dt);this.schedule.applyToReactions(this.reactions);if(!this.reduced&&(this.e.frame%2===0))this.schedule.applyToCrowd();}this.reactions.update(dt,t,{activity:this.active,musicPlaying:this.h.musicPlaying?.()||false,finale:this.active==='finale'});
   const dog=this.kit.instances.get('dog');if(dog&&this.petUntil>t&&!this.reduced){dog.rotation.y=Math.sin(t*3)*.18;dog.position.y=Math.abs(Math.sin(t*5))*.05;}else if(dog){dog.position.y=0;dog.rotation.y=0;}
  }
  pet(){this.petUntil=this.clock+4;this.h.chime();}

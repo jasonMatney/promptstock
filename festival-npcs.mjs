@@ -11,9 +11,9 @@
  *    kit.place in festival-reactions for helpers).
  * 3. Set `location` to a key in LOCATION_KEYS (map destinations or festival
  *    spots). Optional `home: [x, y, z]` overrides for debug teleport.
- * 4. `schedule` is a list of tags from SCHEDULE_TAGS. Today only
- *    stay_home / concert_seat / repair_assist / cheer are live; the rest are
- *    documented stubs for a follow-up schedule runner.
+ * 4. `schedule` is a list of tags from SCHEDULE_TAGS. Free-roam tags are
+ *    executed by `npc-schedule.mjs` (NpcScheduleRunner); concert_seat /
+ *    cheer remain event-owned.
  * 5. Mark `concertReserved: true` to claim a FEATURED_SEATS slot (order =
  *    registry order among reserved NPCs). Keep that count ≤ FEATURED_SEATS.
  * 6. Run `npm test` — schema, unique ids, schedule tags, and concert seat
@@ -23,9 +23,11 @@
  * ---------------
  * Live: home/kit binding, concert reserved seats, repair-helper spawn homes,
  *       reaction guest list, background cluster → EXTRA_FESTIVAL_GUESTS,
- *       gameDebug listNpcs / getNpc / focusNpc.
- * Stub: watch_stage / visit_food_stall / talk_with_friends autonomous walks
- *       (TODO: schedule executor that lerps toward location targets).
+ *       schedule walks (watch_stage / visit_food_stall / talk_with_friends /
+ *       stay_home / repair_assist) via npc-schedule.mjs,
+ *       gameDebug listNpcs / getNpc / focusNpc / setNpcSchedule / advanceSchedule.
+ * Event-owned (not free-roam cycled): concert_seat (FestivalConcert), cheer
+ *       (FestivalReactions celebrate).
  */
 
 /** @typedef {'musician'|'steward'|'companion'|'player'|'animal'|'festivalgoer'|'band'} NpcRole */
@@ -70,16 +72,16 @@ export const SCHEDULE_TAGS = Object.freeze({
     note: 'FestivalReactions celebrate / dance poses on success events.',
   }),
   watch_stage: Object.freeze({
-    live: false,
-    note: 'TODO: walk toward festival_stage / stage apron outside concert.',
+    live: true,
+    note: 'NpcScheduleRunner walks toward festival_stage apron and faces the stage.',
   }),
   visit_food_stall: Object.freeze({
-    live: false,
-    note: 'TODO: wander toward picnic tables / snack props.',
+    live: true,
+    note: 'NpcScheduleRunner wanders toward picnic_west / picnic_east snack clusters.',
   }),
   talk_with_friends: Object.freeze({
-    live: false,
-    note: 'TODO: face cluster mates and hold talk/listen pose.',
+    live: true,
+    note: 'NpcScheduleRunner gathers at home/location cluster and faces inward.',
   }),
 });
 
