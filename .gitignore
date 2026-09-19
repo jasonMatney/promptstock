@@ -11,3 +11,6 @@ dist/
 
 # Visual regression working copies / diffs
 art/skills-jam/renders/artifacts/
+
+# Optional Blender turnaround stills (regenerate with npm run render:turnaround)
+art/skills-jam/renders/turnarounds/*.png
