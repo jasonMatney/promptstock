@@ -10,12 +10,15 @@ Requires Node.js 22 or newer and Python 3 for the optional preview server.
 
 ```sh
 npm ci
-npm run build
 npm test
 python3 scripts/preview-kit.py 8875
 ```
 
-Open http://127.0.0.1:8875/skills-jam-3d.html. To serve the production build, serve the `dist` directory with any static web server. No login, API keys, backend, or CDN is required.
+`npm test` runs `npm run build`, then `npm run check:engine`, then the automated suite. Open http://127.0.0.1:8875/skills-jam-3d.html. To serve the production build, serve the `dist` directory with any static web server. No login, API keys, backend, or CDN is required.
+
+### Engine source of truth
+
+Edit `engine-source.mjs` (and modules it imports). Run `npm run build` to regenerate committed `engine.js` for static hosting at the repo root. `npm run check:engine` (also part of `npm test`) fails if `engine.js` is stale versus a fresh esbuild. Always commit the regenerated `engine.js` (and the HTML `engine.js?v=…` cache-bust) after building.
 
 ## Controls
 
@@ -25,6 +28,7 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 
 - `skills-jam-3d.html`: world layout, menus and first-person exploration.
 - `engine-source.mjs`: Three.js renderer; `engine.js` is its generated bundle.
+- `game-debug.mjs`: `window.gameDebug` console API (teleport, cameras, quality); attached after boot.
 - `festival-play.mjs`: activities and progression.
 - `festival-concert.mjs` and `concert-layout.mjs`: shuffled audience, reserved companion positions, instanced flags and satellite signs.
 - `jam-kit.mjs`: GLB loading, batching and baked character poses.
@@ -36,7 +40,7 @@ This repository contains the current playable source and assets, not earlier dev
 
 ## Verification
 
-75 automated tests cover progression, model loading, animation, spatial separation, companion restoration, audio state and world navigation. Concert guests are spaced irregularly and shuffled independently of character-model batches. 36 extra flags and 12 extra satellite signs use shared render batches.
+83 automated tests cover progression, model loading, animation, spatial separation, companion restoration, audio state and world navigation. Concert guests are spaced irregularly and shuffled independently of character-model batches. 36 extra flags and 12 extra satellite signs use shared render batches.
 
 ## Campsite and audio updates
 
