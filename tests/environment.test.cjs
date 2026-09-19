@@ -4,9 +4,8 @@ const fs=require('node:fs');
 
 test('social poses work on all six exported crowd rigs without altering the source',async()=>{
  const THREE=await import('three');
- const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
- const {bakeCrowdTemplate}=await import('../jam-kit.mjs');
- const loader=new GLTFLoader();loader.register(p=>{p.loadTexture=async()=>new THREE.Texture();return{name:'texture_stub'};});
+ const {bakeCrowdTemplate,createJamGltfLoader}=await import('../jam-kit.mjs');
+ const loader=await createJamGltfLoader();loader.register(p=>{p.loadTexture=async()=>new THREE.Texture();return{name:'texture_stub'};});
  const data=fs.readFileSync('assets/models/crowd_kit.glb');
  const lib=await loader.parseAsync(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'');
  const positions=root=>{const a=[];root.traverse(o=>{if(o.isMesh)a.push(...o.geometry.attributes.position.array);});return a;};

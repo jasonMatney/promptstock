@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { createJamGltfLoader } from '../jam-kit.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const report = JSON.parse(fs.readFileSync(path.join(root, 'art/skills-jam/REPORT.json'), 'utf8'));
@@ -20,7 +20,7 @@ const manifest = JSON.parse(
 const SIZE_TOL = 0.025; // metres — skinned bind-pose vs Blender measure can drift slightly on X
 const HEIGHT_TOL = 0.01;
 
-const loader = new GLTFLoader();
+const loader = await createJamGltfLoader();
 loader.register((parser) => {
   parser.loadTexture = async () => new THREE.Texture();
   return { name: 'budget_texture_stub' };

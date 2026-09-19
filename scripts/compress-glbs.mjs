@@ -1,63 +1,112 @@
 #!/usr/bin/env node
 /**
- * STUB — GLB compression proposal (not wired into jam-kit.mjs this PR).
+ * Compress shipped assets/models/*.glb with meshopt (EXT_meshopt_compression).
  *
- * Why deferred:
- * - jam-kit.mjs uses vanilla GLTFLoader only (see art/skills-jam/ASSET-BUDGET.md).
- * - Draco / meshopt require DRACOLoader + MeshoptDecoder and shipping wasm/js
- *   through scripts/build.mjs into dist/. Wrong wiring breaks boot.
+ * Uses reorder + EXT_meshopt_compression WITHOUT attribute quantization.
+ * Quantize (as in gltf-transform's meshopt() helper) breaks skinned-mesh
+ * baking / compactSkinnedAsset in this project — keep vertices full-float.
  *
- * Measured earlier (quantize / optimize trials, not shipped):
- *   crowd_kit  4.07 → ~3.27 MB (quantize) ; plain optimize grew the file
- *   tent_kit   0.84 → ~0.66 MB
- *   props_kit  0.30 → ~0.18 MB
- *   world_dressing 0.32 → ~0.23 MB
- *   player_jam 0.60 → ~0.57 MB
+ * Requires MeshoptDecoder wired in jam-kit.mjs (createJamGltfLoader).
+ * Replaces GLBs in place; regenerate via `npm run export:kits`, then re-run.
  *
- * Recommended next PR:
- * 1. In jam-kit.mjs loadJamKit():
- *      import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
- *      import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
- *      const draco = new DRACOLoader().setDecoderPath('.../draco/gltf/');
- *      loader.setDRACOLoader(draco);
- *      loader.setMeshoptDecoder(MeshoptDecoder);
- * 2. Copy three/examples/jsm/libs/draco/gltf/* into dist via build.mjs.
- * 3. Compress with: npx @gltf-transform/cli optimize assets/models/IN.glb OUT.glb \\
- *      --compress meshopt  (or draco) after a safety copy.
- * 4. Keep uncompressed originals under art/ or document fallback.
- * 5. npm test + intentional visual golden refresh if look shifts.
+ * Temp outputs MUST end in `.glb` so NodeIO embeds buffers (a non-.glb suffix
+ * writes external sidecars and silently drops textures from the GLB).
  *
- * This stub refuses to mutate assets until the decoder path exists.
+ * Usage:
+ *   npm run compress:glbs
+ *   npm run compress:glbs -- --dry-run
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
+import { dedup, prune, reorder } from '@gltf-transform/functions';
+import { MeshoptEncoder, MeshoptDecoder } from 'meshoptimizer';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const modelsDir = path.join(root, 'assets/models');
+const dryRun = process.argv.includes('--dry-run');
+
 const jamKit = fs.readFileSync(path.join(root, 'jam-kit.mjs'), 'utf8');
 const hasDecoder =
-  /DRACOLoader/.test(jamKit) || /MeshoptDecoder/.test(jamKit) || /setMeshoptDecoder/.test(jamKit);
-
-const models = fs
-  .readdirSync(path.join(root, 'assets/models'))
-  .filter((f) => f.endsWith('.glb'))
-  .map((f) => {
-    const bytes = fs.statSync(path.join(root, 'assets/models', f)).size;
-    return { f, bytes };
-  });
-
-console.log('GLB compression stub (no writes). Current sizes:');
-for (const { f, bytes } of models) {
-  console.log(`  ${f.padEnd(22)} ${(bytes / 1e6).toFixed(2)} MB`);
-}
-console.log(`Decoder wired in jam-kit.mjs: ${hasDecoder ? 'yes' : 'NO — refusing to compress'}`);
+  /MeshoptDecoder/.test(jamKit) &&
+  (/setMeshoptDecoder/.test(jamKit) || /createJamGltfLoader/.test(jamKit));
 
 if (!hasDecoder) {
-  console.log(`
-Next steps are documented in this file's header and art/skills-jam/ASSET-BUDGET.md.
-When ready, re-run with decoder support landed, then invoke gltf-transform here.`);
-  process.exit(0);
+  console.error(
+    'Refusing to compress: jam-kit.mjs does not wire MeshoptDecoder / createJamGltfLoader.',
+  );
+  process.exit(1);
 }
 
-console.error('Decoders detected, but compress-glbs.mjs still needs an explicit implementation pass.');
-process.exit(2);
+await MeshoptEncoder.ready;
+await MeshoptDecoder.ready;
+
+const io = new NodeIO()
+  .registerExtensions(ALL_EXTENSIONS)
+  .registerDependencies({
+    'meshopt.decoder': MeshoptDecoder,
+    'meshopt.encoder': MeshoptEncoder,
+  });
+
+const files = fs
+  .readdirSync(modelsDir)
+  .filter((f) => f.endsWith('.glb'))
+  .sort();
+
+if (!files.length) {
+  console.error('No GLBs under assets/models/');
+  process.exit(1);
+}
+
+console.log(
+  `Meshopt compress (reorder+encode, no quantize${dryRun ? ', dry-run' : ''}) — decoder wired: yes`,
+);
+
+let beforeTotal = 0;
+let afterTotal = 0;
+
+for (const file of files) {
+  const inputPath = path.join(modelsDir, file);
+  const before = fs.statSync(inputPath).size;
+  beforeTotal += before;
+
+  const document = await io.read(inputPath);
+  await document.transform(
+    dedup(),
+    prune(),
+    reorder({ encoder: MeshoptEncoder, target: 'size' }),
+  );
+  document
+    .createExtension(EXTMeshoptCompression)
+    .setRequired(true)
+    .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
+
+  // Must end in .glb so NodeIO embeds images/bin (non-.glb → external sidecars).
+  const tmpPath = inputPath.replace(/\.glb$/i, '') + '.meshopt-tmp.glb';
+  await io.write(tmpPath, document);
+  const after = fs.statSync(tmpPath).size;
+  afterTotal += after;
+
+  const pct = ((1 - after / before) * 100).toFixed(1);
+  console.log(
+    `  ${file.padEnd(22)} ${(before / 1e6).toFixed(2)} → ${(after / 1e6).toFixed(2)} MB (${pct}% smaller)`,
+  );
+
+  if (dryRun) {
+    fs.unlinkSync(tmpPath);
+  } else {
+    fs.renameSync(tmpPath, inputPath);
+  }
+}
+
+console.log(
+  `Combined: ${(beforeTotal / 1e6).toFixed(2)} → ${(afterTotal / 1e6).toFixed(2)} MB` +
+    (dryRun ? ' (not written)' : ''),
+);
+console.log(
+  dryRun
+    ? 'Dry run complete. Re-run without --dry-run to replace shipped GLBs.'
+    : 'Replaced shipped GLBs. Next: npm run build && npm test',
+);
