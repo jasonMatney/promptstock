@@ -55,4 +55,5 @@ test('blender kit pipeline docs and scripts exist', () => {
   const budget = fs.readFileSync('art/skills-jam/ASSET-BUDGET.md', 'utf8');
   assert.match(budget, /export:kits/);
   assert.match(budget, /compress-glbs/);
+  assert.match(budget, /meshopt/);
 });

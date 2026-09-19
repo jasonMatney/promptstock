@@ -1,8 +1,19 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { repairKitSigns } from './festival-signage.mjs';
+
+/** GLTFLoader with MeshoptDecoder (WASM embedded in the module — no CDN / extra files). Uncompressed GLBs still load. */
+export async function createJamGltfLoader() {
+  const loader = new GLTFLoader();
+  if (MeshoptDecoder.supported) {
+    await MeshoptDecoder.ready;
+    loader.setMeshoptDecoder(MeshoptDecoder);
+  }
+  return loader;
+}
 
 // Merge only compatible skinned parts, retaining the original skeleton and bind pose.
 // This reduces a crowd character from ~16 submissions to four to eight without baking animation.
@@ -66,5 +77,5 @@ transformed.z+=sin(jamCrowdTime*.6+guestPhase)*max(position.y,0.)*.007*jamCrowdM
  update(time){if(this.crowdMotion)this.crowdMotion.value=this.engine.play?.reduced||this.engine.play?.concert?.active?0:1;const dt=this.lastTime===undefined?0:Math.min(.1,Math.max(0,time-this.lastTime));this.lastTime=time;for(const {mixer} of this.mixers){if(this.engine.jamReview)mixer.setTime(time);else mixer.update(dt);}const ball=this.instances.get('kickball');if(ball&&!this.controlledBall){const phase=time%1;ball.position.y=.20+Math.max(0,Math.sin(phase*Math.PI))*0.42;ball.rotation.x=time*2;ball.rotation.z=time;}}
  stats(){let tris=0,draws=0;this.group.traverse(o=>{if(o.isMesh){tris+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);draws+=o.geometry.groups.length||1;}});return{finiteTransforms:this.group.children.every(o=>o.matrixWorld.elements.every(Number.isFinite)),placedRoots:this.instances.size,backgroundPeople:this.backgroundPeople||0,triangles:tris,meshBatches:draws,clips:Object.keys(this.mixers[0]?.actions||{}),enabled:this.enabled};}
 }
-export async function loadJamKit(engine){const loader=new GLTFLoader();const layout=await fetch('assets/models/layout.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Kit layout failed to load');return r.json();});const keys=['tent_kit','props_kit','player_jam','crowd_kit','world_dressing'];const libs=await Promise.all(keys.map(async k=>[k,await loader.loadAsync(`assets/models/${k}.glb?v=${layout.modelRevisions?.[k]||1}`)]));repairKitSigns(new Map(libs),Math.min(8,engine.renderer?.capabilities.getMaxAnisotropy()||4));for(const [key,lib] of libs)if(key!=='player_jam'&&!new URLSearchParams(location.search).has('unbatched')){const roots=[];lib.scene.traverse(o=>{if(o.userData.asset_id)roots.push(o);});for(const root of roots){if(key==='crowd_kit')compactSkinnedAsset(root);compactStaticAsset(root);}}return new JamKit(engine,new Map(libs),layout);}
+export async function loadJamKit(engine){const loader=await createJamGltfLoader();const layout=await fetch('assets/models/layout.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Kit layout failed to load');return r.json();});const keys=['tent_kit','props_kit','player_jam','crowd_kit','world_dressing'];const libs=await Promise.all(keys.map(async k=>[k,await loader.loadAsync(`assets/models/${k}.glb?v=${layout.modelRevisions?.[k]||1}`)]));repairKitSigns(new Map(libs),Math.min(8,engine.renderer?.capabilities.getMaxAnisotropy()||4));for(const [key,lib] of libs)if(key!=='player_jam'&&!new URLSearchParams(location.search).has('unbatched')){const roots=[];lib.scene.traverse(o=>{if(o.userData.asset_id)roots.push(o);});for(const root of roots){if(key==='crowd_kit')compactSkinnedAsset(root);compactStaticAsset(root);}}return new JamKit(engine,new Map(libs),layout);}
 export function replacedNode(n){for(let p=n;p;p=p.parent)if(p.jamReplace)return true;return false;}

@@ -3,8 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 
 test('merging the six crowd rigs preserves posed vertices and reduces mesh submissions',async()=>{
- const T=await import('three');const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');const {compactSkinnedAsset}=await import('../jam-kit.mjs');
- const loader=new GLTFLoader();loader.register(p=>{p.loadTexture=async()=>new T.Texture();return{name:'texture_stub'};});
+ const T=await import('three');const {compactSkinnedAsset,createJamGltfLoader}=await import('../jam-kit.mjs');
+ const loader=await createJamGltfLoader();loader.register(p=>{p.loadTexture=async()=>new T.Texture();return{name:'texture_stub'};});
  const data=fs.readFileSync('assets/models/crowd_kit.glb');const lib=await loader.parseAsync(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'');
  const sample=root=>{lib.scene.updateMatrixWorld(true);let count=0;const points=[];root.traverse(o=>{if(!o.isSkinnedMesh)return;count++;o.skeleton.update();const a=o.geometry.index;for(let j=0;j<(a?.count||o.geometry.attributes.position.count);j++){const v=o.getVertexPosition(a?a.getX(j):j,new T.Vector3()).applyMatrix4(o.matrixWorld);points.push([v.x,v.y,v.z].map(x=>String(Math.round(x*10000))).join(','));}});return{points:points.sort(),count};};
  for(let i=1;i<=6;i++){

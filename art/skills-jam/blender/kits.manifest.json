@@ -1,5 +1,5 @@
 {
-  "description": "Hero kit libraries for Blender → GLB export. Place matching .blend files beside this manifest (same basename as blend field).",
+  "description": "Hero kit libraries for Blender \u2192 GLB export. Place matching .blend files beside this manifest (same basename as blend field).",
   "eyeHeightM": 1.82,
   "outputDir": "assets/models",
   "reportPath": "art/skills-jam/REPORT.json",
@@ -8,7 +8,13 @@
       "id": "tent_kit",
       "blend": "tent_kit.blend",
       "glb": "tent_kit.glb",
-      "roots": ["tent_ai", "tent_maker", "tent_aid", "tent_swap", "newsstand"],
+      "roots": [
+        "tent_ai",
+        "tent_maker",
+        "tent_aid",
+        "tent_swap",
+        "newsstand"
+      ],
       "triangleBudgetPerRoot": 4000
     },
     {
@@ -40,15 +46,29 @@
       "id": "player_jam",
       "blend": "player_jam.blend",
       "glb": "player_jam.glb",
-      "roots": ["player_jam"],
+      "roots": [
+        "player_jam"
+      ],
       "triangleBudgetPerRoot": 15000,
-      "requiredClips": ["idle", "walk", "kick"]
+      "requiredClips": [
+        "idle",
+        "walk",
+        "kick"
+      ]
     },
     {
       "id": "crowd_kit",
       "blend": "crowd_kit.blend",
       "glb": "crowd_kit.glb",
-      "roots": ["crowd_1", "crowd_2", "crowd_3", "crowd_4", "crowd_5", "crowd_6", "golden_retriever"],
+      "roots": [
+        "crowd_1",
+        "crowd_2",
+        "crowd_3",
+        "crowd_4",
+        "crowd_5",
+        "crowd_6",
+        "golden_retriever"
+      ],
       "triangleBudgetPerRoot": 12000
     },
     {
@@ -68,11 +88,11 @@
     }
   ],
   "byteCeilings": {
-    "crowd_kit.glb": 4718592,
-    "tent_kit.glb": 1572864,
-    "player_jam.glb": 1048576,
-    "props_kit.glb": 786432,
-    "world_dressing.glb": 786432,
-    "allGlbsCombined": 6815744
+    "crowd_kit.glb": 3670016,
+    "tent_kit.glb": 786432,
+    "player_jam.glb": 524288,
+    "props_kit.glb": 393216,
+    "world_dressing.glb": 393216,
+    "allGlbsCombined": 5242880
   }
 }

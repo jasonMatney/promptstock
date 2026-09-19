@@ -33,11 +33,11 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `festival-concert.mjs` and `concert-layout.mjs`: shuffled audience, reserved companion positions, instanced flags and satellite signs.
 - `festival-npcs.mjs`: data-driven NPC registry (featured companions + crowd groups/roles/schedules); see file header for how to add an NPC.
 - `festival-crowd.mjs`: background guest positions generated from `CROWD_GROUPS` in the NPC registry.
-- `jam-kit.mjs`: GLB loading, batching and baked character poses.
+- `jam-kit.mjs`: GLB loading (MeshoptDecoder), batching and baked character poses.
 - `lake-adventure.mjs`: canoe and camping experience.
 - `assets/models`: game-ready GLBs; `assets/concert/CREDITS.md`: satellite-image credits.
 - `art/skills-jam/ASSET-BUDGET.md`: ship-size budgets and recompress notes; `art/skills-jam/VISUAL-BIBLE.md`: style target + visual regression pointers.
-- `art/skills-jam/blender/`: Blender → GLB export scripts + manifest (`npm run export:kits`, `measure:kits`, `check:glb-budgets`). Editable `.blend` files are optional and usually not committed.
+- `art/skills-jam/blender/`: Blender → GLB export scripts + manifest (`npm run export:kits`, `compress:glbs`, `measure:kits`, `check:glb-budgets`). Editable `.blend` files are optional and usually not committed. Shipped GLBs are meshopt-compressed.
 - `audio`: browser-ready soundtrack MP3s (96 kbps stereo; see `audio/README.md`); `festival-music.mjs`: track mapping and playback.
 - `passport-store.mjs`: localStorage key constants and passport / discovery load-save helpers (exposed as `window.PassportStore`).
 
