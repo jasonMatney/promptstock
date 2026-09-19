@@ -8,7 +8,8 @@
     "test": "npm run build && npm run check:engine && node --test tests/*.test.cjs",
     "review:repair": "esbuild tests/fixtures/repair-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/repair-preview.js",
     "review:mixer": "esbuild tests/fixtures/mixer-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/mixer-preview.js",
-    "review:records": "esbuild tests/fixtures/records-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/records-preview.js"
+    "review:records": "esbuild tests/fixtures/records-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/records-preview.js",
+    "smoke": "node scripts/smoke-game-debug.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",
