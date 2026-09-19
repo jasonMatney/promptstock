@@ -22,7 +22,9 @@
     "pipeline:check": "node scripts/pipeline-check.mjs",
     "pipeline:kits": "npm run export:kits && npm run compress:glbs && npm run measure:kits -- --write-md && npm run check:glb-budgets && npm run build && npm test",
     "author:kits": "node scripts/author-kits.mjs",
-    "capture:art": "node scripts/capture-art-review.mjs"
+    "capture:art": "node scripts/capture-art-review.mjs",
+    "author:people": "node scripts/author-people.mjs",
+    "smoke:people": "node scripts/smoke-people.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",

@@ -164,3 +164,11 @@ full-resolution evidence. `npm run author:kits` regenerates the current authored
 tent and prop pass; `npm run pipeline:kits` exports and validates saved sources.
 
 [Executed workflow and visual evidence](art/skills-jam/pipeline/IMPLEMENTATION.md).
+
+### Meet the cast
+
+Open `people-review.html` after building to inspect the seven authored people,
+rotate their faces and play the host's idle, walk and kick animations. The same
+viewer ships in `dist/people-review.html`. Rebuild the editable Blender cast with
+`npm run author:people`, then `npm run pipeline:kits`. See
+[the people update](art/skills-jam/pipeline/PEOPLE-UPDATE.md) for renders and QA.

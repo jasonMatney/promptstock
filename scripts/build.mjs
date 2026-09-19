@@ -25,6 +25,9 @@ await build({
 });
 
 await mkdir('dist', { recursive: true });
+await build({entryPoints:['people-review.mjs'],bundle:true,format:'esm',target:['es2022'],minify:true,outfile:'people-review.js'});
+await writeFile('dist/people-review.html',(await readFile('people-review.html','utf8')).replace('href="skills-jam-3d.html"','href="index.html"'));
+await copyFile('people-review.js','dist/people-review.js');
 const engineRevision = createHash('sha256')
   .update(await readFile('engine.js'))
   .digest('hex')

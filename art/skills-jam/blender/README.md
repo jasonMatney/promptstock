@@ -69,3 +69,17 @@ The deterministic regression set uses lossless PNGs, fixed time and camera, and
 low quality. Full-resolution captures in `renders/astra/` cover detailed rendering.
 Missing baselines fail. `npm test` checks the committed engine before rebuilding;
 after changing runtime source, run `npm run build` before testing/committing.
+
+## Human character authoring
+
+`npm run author:people` rebuilds the host and six guests in the two editable
+`sources/` kits. It preserves the dog and other unrelated scene hierarchies.
+`-- --hero-only` iterates on the host. Original historical kits are not modified.
+The authored surfaces live in `character_workshop.py` and `cast_faces.py`.
+
+Run `npm run pipeline:kits` to export, compress, measure, check budgets and test.
+Render real-model close-ups and poses with Blender's `--background --python
+art/skills-jam/blender/review_people.py` (optional `-- --hero-only`).
+Open `/people-review.html` after `npm run build` for the shipped GLBs, orbit
+controls, close-up views and the host's idle/walk/kick clips. This review page
+is included in the built site; studio images stay outside the runtime bundle.
