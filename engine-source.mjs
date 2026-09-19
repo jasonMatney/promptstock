@@ -11,6 +11,14 @@ import {
   emptyPassport, normalizePassport, loadPassport, savePassport,
   loadDiscoveries, saveDiscoveries,
 } from './passport-store.mjs';
+import {
+  DESTINATIONS as MAP_DESTINATIONS,
+  TOUR_ROUTE as MAP_TOUR_ROUTE,
+  MAP_PANEL_IDS,
+  destinationIds as mapDestinationIds,
+  cloneDestination,
+  listDestinations,
+} from './festival-map-data.mjs';
 import { loadJamKit, replacedNode } from './jam-kit.mjs';
 import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
@@ -85,4 +93,4 @@ export class FestivalEngine {
  project(point){const p=new THREE.Vector3(...point).project(this.camera);if(p.z>1)return null;return[(p.x*.5+.5)*innerWidth,(-p.y*.5+.5)*innerHeight,p.z];}
  async compile(){await this.renderer.compileAsync(this.scene,this.camera);}
 }
-if(typeof window!=='undefined'){window.FestivalCopy={recordLabel};window.FestivalCrowd={EXTRA_FESTIVAL_GUESTS};window.FestivalEngine=FestivalEngine;window.FestivalPlay=FestivalPlay;window.FestivalMusic=FestivalMusic;window.attachGameDebug=attachGameDebug;window.QUALITY_STORAGE_KEY=QUALITY_STORAGE_KEY;window.loadQualityPreference=loadQualityPreference;window.saveQualityPreference=saveQualityPreference;window.applyEngineQuality=applyEngineQuality;window.PassportStore={PASSPORT_STORAGE_KEY,DISCOVERY_STORAGE_KEY,ROUND_STORAGE_KEY,STAMP_IDS,PILL_IDS,RECORD_CHOICES,DISTRICT_IDS,emptyPassport,normalizePassport,loadPassport,savePassport,loadDiscoveries,saveDiscoveries};}
+if(typeof window!=='undefined'){window.FestivalCopy={recordLabel};window.FestivalCrowd={EXTRA_FESTIVAL_GUESTS};window.FestivalEngine=FestivalEngine;window.FestivalPlay=FestivalPlay;window.FestivalMusic=FestivalMusic;window.attachGameDebug=attachGameDebug;window.QUALITY_STORAGE_KEY=QUALITY_STORAGE_KEY;window.loadQualityPreference=loadQualityPreference;window.saveQualityPreference=saveQualityPreference;window.applyEngineQuality=applyEngineQuality;window.PassportStore={PASSPORT_STORAGE_KEY,DISCOVERY_STORAGE_KEY,ROUND_STORAGE_KEY,STAMP_IDS,PILL_IDS,RECORD_CHOICES,DISTRICT_IDS,emptyPassport,normalizePassport,loadPassport,savePassport,loadDiscoveries,saveDiscoveries};window.FestivalMapData={DESTINATIONS:MAP_DESTINATIONS,TOUR_ROUTE:MAP_TOUR_ROUTE,MAP_PANEL_IDS,destinationIds:mapDestinationIds,cloneDestination,listDestinations};}

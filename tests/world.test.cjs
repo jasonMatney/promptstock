@@ -4,7 +4,7 @@ const fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync(require('node:path').join(__dirname,'../skills-jam-3d.html'),'utf8');
 const noop=()=>{};
 const canvasContext=new Proxy({measureText:t=>({width:t.length*10})},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
-const context=vm.createContext({console,Float32Array,Math,JSON,Map,Set,Uint8Array,URL,document:{createElement:()=>({getContext:()=>canvasContext}),addEventListener:noop},window:{FestivalCrowd:require('../festival-crowd.mjs'),addEventListener:noop},localStorage:{getItem:()=>null},matchMedia:()=>({matches:false})});
+const context=vm.createContext({console,Float32Array,Math,JSON,Map,Set,Uint8Array,URL,document:{createElement:()=>({getContext:()=>canvasContext}),addEventListener:noop},window:{FestivalCrowd:require('../festival-crowd.mjs'),FestivalMapData:require('../festival-map-data.mjs'),addEventListener:noop},localStorage:{getItem:()=>null},matchMedia:()=>({matches:false})});
 for(const m of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))vm.runInContext(m[1].replace(/\bboot\(\);\s*$/,''),context);
 vm.runInContext('engine={texture:()=>null,build:r=>r.update(),dusk:0};posterTexture={id:"test",gl:null};foliageTexture={id:"foliage",gl:null};buildWorld();',context);
 const get=code=>vm.runInContext(code,context);
