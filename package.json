@@ -12,7 +12,8 @@
     "smoke": "node scripts/smoke-game-debug.mjs",
     "smoke:browser": "node scripts/smoke-browser.mjs",
     "test:visual": "node scripts/compare-visual.mjs",
-    "smoke:visual": "node scripts/compare-visual.mjs"
+    "smoke:visual": "node scripts/compare-visual.mjs",
+    "optimize:rasters": "node scripts/optimize-rasters.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",
@@ -22,6 +23,7 @@
     "jpeg-js": "^0.4.4",
     "pixelmatch": "^7.2.0",
     "playwright": "^1.55.0",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "sharp": "^0.35.4"
   }
 }

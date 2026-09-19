@@ -34,6 +34,7 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `jam-kit.mjs`: GLB loading, batching and baked character poses.
 - `lake-adventure.mjs`: canoe and camping experience.
 - `assets/models`: game-ready GLBs; `assets/concert/CREDITS.md`: satellite-image credits.
+- `art/skills-jam/ASSET-BUDGET.md`: ship-size budgets and recompress notes; `art/skills-jam/VISUAL-BIBLE.md`: style target + visual regression pointers.
 - `audio`: browser-ready soundtrack MP3s (96 kbps stereo; see `audio/README.md`); `festival-music.mjs`: track mapping and playback.
 - `passport-store.mjs`: localStorage key constants and passport / discovery load-save helpers (exposed as `window.PassportStore`).
 

@@ -1,6 +1,6 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');
 test('published game contains the new notice and excludes the original illustration',()=>{
- const html=fs.readFileSync('dist/index.html','utf8');assert.ok(html.includes('assets/festival-notice.png'));assert.doesNotMatch(html,/Inspired by your illustration|THE ORIGINAL ILLUSTRATION|const POSTER="data:/);
+ const html=fs.readFileSync('dist/index.html','utf8');assert.ok(html.includes('assets/festival-notice.jpg'));assert.doesNotMatch(html,/Inspired by your illustration|THE ORIGINAL ILLUSTRATION|const POSTER="data:/);
  assert.equal(fs.existsSync('dist/assets/skills-jam-2026.jpeg'),false);assert.ok(fs.statSync('dist/audio/moonlit-cabin-hush.mp3').size>10000);
 });
 test('pine grove shares geometry across trees and all vertices and placements are finite',async()=>{
