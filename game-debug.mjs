@@ -2,7 +2,8 @@
  * Lightweight browser debug surface for Promptstock.
  * Attach after the world boots: window.attachGameDebug(window.skillsJam)
  * Then use window.gameDebug from the console.
- * NPC helpers: listNpcs(), getNpc(id), focusNpc(id) — see festival-npcs.mjs.
+ * NPC helpers: listNpcs(), getNpc(id), focusNpc(id), setNpcSchedule(id, tags),
+ * advanceSchedule(id?) — see festival-npcs.mjs / npc-schedule.mjs.
  *
  * localStorage keys used by the jam (passport/discovery helpers: passport-store.mjs):
  * - skillsjam.world.passport.v1 — stamps / pills / record / dog
@@ -126,7 +127,7 @@ export function attachGameDebug(host) {
   };
 
   const api = {
-    version: '1.2.0',
+    version: '1.3.0',
 
     /** Spot / district ids you can teleport to. */
     listLocations() {
@@ -155,6 +156,34 @@ export function attachGameDebug(host) {
     /** Schedule tag live/stub map. */
     npcScheduleStatus() {
       return scheduleStatus();
+    },
+
+    /**
+     * Override free-roam schedule tags for a featured NPC or crowd group.
+     * Requires a live FestivalPlay schedule runner (after boot).
+     */
+    setNpcSchedule(id, tags) {
+      const runner = host.play?.schedule || host.schedule;
+      if (!runner?.setNpcSchedule) {
+        throw new Error('schedule runner not available (boot the festival first)');
+      }
+      return runner.setNpcSchedule(id, tags);
+    },
+
+    /** Advance one NPC/group to the next schedule tag, or all when id omitted. */
+    advanceSchedule(id) {
+      const runner = host.play?.schedule || host.schedule;
+      if (!runner?.advanceSchedule) {
+        throw new Error('schedule runner not available (boot the festival first)');
+      }
+      return runner.advanceSchedule(id);
+    },
+
+    /** Snapshot schedule state for one actor (friendly id or kitId). */
+    getNpcSchedule(id) {
+      const runner = host.play?.schedule || host.schedule;
+      if (!runner?.getState) return null;
+      return runner.getState(id);
     },
 
     /**

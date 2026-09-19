@@ -102,9 +102,10 @@ test('repair helper spawns and reaction guest ids stay playable', async () => {
   ]);
   const status = scheduleStatus();
   assert.equal(status.concert_seat.live, true);
-  assert.equal(status.watch_stage.live, false);
-  assert.equal(status.visit_food_stall.live, false);
-  assert.equal(status.talk_with_friends.live, false);
+  assert.equal(status.watch_stage.live, true);
+  assert.equal(status.visit_food_stall.live, true);
+  assert.equal(status.talk_with_friends.live, true);
+  assert.equal(status.cheer.live, true);
 });
 
 test('invalid NPC definitions fail validation', async () => {
