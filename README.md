@@ -67,6 +67,15 @@ GPU-free module smoke (no browser):
 npm run smoke
 ```
 
+Headless browser smoke (serves the repo, waits for `window.gameDebug`, teleports, captures a PNG):
+
+```sh
+npx playwright install chromium   # once per machine
+npm run smoke:browser
+```
+
+`smoke:browser` uses Playwright as a devDependency. If Playwright’s Chromium is missing it tries system Chrome (`channel: chrome` / `/usr/bin/google-chrome`). Optional env: `SMOKE_BOOT_MS` (default 120000), `SMOKE_PORT`, `CHROME_PATH`.
+
 Or with the preview server: `python3 scripts/preview-kit.py 8875`, open the page, then use the one-liners above.
 
 ## Campsite and audio updates
