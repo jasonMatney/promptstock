@@ -1,5 +1,7 @@
 # Art handoff pipeline (Astra → Blender → ship)
 
+**OpenAI Astra briefing:** [`ASTRA-UPDATE.md`](ASTRA-UPDATE.md) — what Grok shipped (PRs #1–#12), limitations, and what Astra should do next.
+
 Promptstock does **not** generate `.blend` files from GPT Image. Astra + GPT Image produce the visual bible, concept sheets, texture tiles, and Blender reference turnarounds. Humans (or Astra-in-Blender) author hero kits; `npm run export:kits` ships GLB.
 
 **Style lock (must match):**

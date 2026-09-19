@@ -124,7 +124,7 @@ gameDebug.setWeather({ clouds: 0.8 })
 gameDebug.getAtmosphere()         // snapshot + live/stub map
 ```
 
-## Art pipeline
+## Art pipeline ([OpenAI Astra update](art/skills-jam/pipeline/ASTRA-UPDATE.md))
 
 Astra + GPT Image produce concepts, texture tiles, and Blender orthos (style-locked to the visual bible). Humans author hero kits in Blender; `npm run export:kits` ships GLB. Full handoff (prompts → Blender → export → budgets → compress → visual test):
 
