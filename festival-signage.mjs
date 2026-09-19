@@ -55,7 +55,7 @@ export function repairKitSigns(libraries,anisotropy=4){
   o.geometry.computeBoundingBox();const s=o.geometry.boundingBox.getSize(new THREE.Vector3());
   const dimensions=[s.x,s.y,s.z].sort((a,b)=>b-a),aspect=dimensions[0]/dimensions[1];
   const id=key+':'+aspect.toFixed(3);if(!cache.has(id)){
-   const lines=key==='maker'?['THE TINKER','TENT']:key==='news'&&aspect<6?['THE PATCH NOTES','PRESS']:title.split('\n');
+   const lines=key==='maker'&&aspect<6?['THE TINKER','TENT']:key==='news'&&aspect<6?['THE PATCH NOTES','PRESS']:title.split('\n');
    const tex=new THREE.CanvasTexture(signCanvas(lines,aspect,{ink:key==='aid'?'#993f31':'#184c4b'}));tex.colorSpace=THREE.SRGBColorSpace;tex.flipY=o.material.map?.flipY??false;tex.anisotropy=anisotropy;
    const m=o.material.clone();m.map=tex;m.roughness=1;m.name='printed_'+id;cache.set(id,m);
   }

@@ -12,6 +12,7 @@ test('dist ships optimized rasters and excludes art-direction docs / illustratio
   assert.equal(fs.existsSync('dist/assets/skills-jam-2026.jpeg'), false);
   assert.equal(fs.existsSync('dist/assets/skills-jam-2026.png'), false);
   assert.ok(fs.existsSync('dist/assets/concert/CREDITS.md'));
+  assert.deepEqual(fs.readdirSync('dist/assets/models').sort(), ['crowd_kit.glb','layout.json','player_jam.glb','props_kit.glb','tent_kit.glb','world_dressing.glb']);
 
   const ceilings = {
     'assets/festival-notice.jpg': 400_000,

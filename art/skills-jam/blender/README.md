@@ -1,75 +1,71 @@
-# Blender → GLB kit pipeline
+# Editable Blender workflow
 
-Editable Blender sources for Promptstock hero kits live **here** (not committed by default — blends are large and optional for gameplay). Shipped game-ready binaries stay in `assets/models/*.glb`.
+The five working kits are committed under `sources/`. The manifest resolves those
+paths directly; no copying or symlinking is needed. These were recovered from the
+existing local authoring files, including packed textures, rigs and player actions.
+The original local files outside `sources/` remain intact.
 
-## Sources + image handoff
-
-Editable hero `.blend` files belong in [`sources/`](sources/) (gitkept; large binaries may use Git LFS later). Copy or symlink a kit blend beside this README (basename must match `kits.manifest.json`) before `npm run export:kits`.
-
-Astra / GPT Image does **not** author blends — it supplies concepts, textures, and orthos. Full Image → Blender → export → budget → compress → visual-test flow: [`../pipeline/README.md`](../pipeline/README.md).
-
-## Kits
-
-| Kit id | Expected blend | Shipped GLB | Notes |
-| --- | --- | --- | --- |
-| `tent_kit` | `tent_kit.blend` | `assets/models/tent_kit.glb` | Booths + newsstand |
-| `props_kit` | `props_kit.blend` | `assets/models/props_kit.glb` | Records, jars, robot, … |
-| `player_jam` | `player_jam.blend` | `assets/models/player_jam.glb` | Clips: idle / walk / kick |
-| `crowd_kit` | `crowd_kit.blend` | `assets/models/crowd_kit.glb` | Six guests + retriever |
-| `world_dressing` | `world_dressing.blend` | `assets/models/world_dressing.glb` | Trees, stage, sky card |
-
-Root object names (or `asset_id` custom properties) must match `kits.manifest.json`. Custom props `asset_id`, `kit`, and `jam_pivot` export as glTF extras consumed by `jam-kit.mjs`.
-
-## Prerequisites
-
-- **Blender 4.2+** on `PATH` as `blender` (or set `BLENDER=/path/to/blender`).
-  - Debian/Ubuntu: `sudo apt-get install blender`
-  - macOS: `brew install --cask blender` then symlink `blender` onto your PATH
-  - https://www.blender.org/download/
-- Node 22+ for the npm wrappers and budget checks.
-
-## Workflow
+Use Blender **4.5 LTS** and Node 22+. Set `BLENDER=/path/to/blender`, install Blender
+on PATH, or use the standard macOS application. The wrappers also discover a local
+`.tools/Blender.app` (ignored by Git). This workspace has Blender 4.5.3 there.
+Blender scripts propagate failures through `--python-exit-code 1`.
 
 ```sh
-# 1. Edit geometry / materials / actions in Blender (save .blend here).
-# 2. Export all kits (or one):
-npm run export:kits
+npm ci
+# Edit and save sources/*.blend in Blender, then:
+npm run pipeline:kits
+```
+
+This executes export → meshopt compression → evaluated source measurement →
+triangle/bounds/byte checks → build → tests. Export applies geometry modifiers and
+preserves skinning, packed textures, custom root metadata, and the player's NLA
+clips (`idle`, `walk`, `kick`). Meshopt stays unquantized to preserve skinned baking.
+
+To reproduce the current tent and prop art pass on the working sources:
+
+```sh
+npm run author:kits
+npm run pipeline:kits
+npm run render:turnaround -- --kit tent_kit --root tent_ai
+```
+
+`author:kits` replaces the four tent hierarchies and regenerates its own prop
+accents. It is optional: **do not run it over subsequent hand-edited tent designs
+unless you intend to restore this procedural design.** Ordinary Blender edits only
+need `pipeline:kits`. It never edits the original local `blender/*.blend` files.
+The design reference is `../pipeline/concepts/tent-atelier-v1.png`.
+
+Individual commands accept a kit selector where useful:
+
+```sh
 npm run export:kits -- --kit player_jam
-
-# 3. Refresh REPORT.json (+ optional MEASUREMENTS.md):
-npm run measure:kits
-npm run measure:kits -- --write-md
-
-# 4. Enforce triangle / bbox / byte budgets against shipped GLBs:
+npm run measure:kits -- --kit player_jam --write-md
+npm run compress:glbs
 npm run check:glb-budgets
-
-# 5. Rebuild cache-bust hashes + engine, then test:
+npm run build
 npm test
 ```
 
-`npm run export:kits` fails clearly when Blender is missing or when the requested `.blend` files are absent. Gameplay does **not** require blends — only re-authoring does.
+Manifest root names and `asset_id` values are the runtime contract. Keep metres,
+ground pivots, packed images and required clips. Never export studio cameras or
+lights. Turnarounds read the editable source and isolate the requested hierarchy;
+they do not try to import meshopt GLBs back into Blender.
 
-### Measure without blends
+Measurements use evaluated meshes at frame 1, including modifiers. Budget checks
+load actual compressed GLBs through the same meshopt decoder used by the game.
+Source-less measurement falls back to GLB import only for uncompressed GLBs.
 
-`measure_kits.py` falls back to importing the shipped GLB when a `.blend` is missing, so CI / agents can refresh `REPORT.json` from binaries alone.
-
-### Optional turnaround still
+For art acceptance, serve the repository with `python3 -m http.server 8765`, then:
 
 ```sh
-npm run render:turnaround -- --kit player_jam
-# → art/skills-jam/renders/turnarounds/player_jam_player_jam.png
+npm run capture:art -- after
+npm run smoke:browser
+# Inspect full-resolution images before explicitly accepting regression baselines:
+UPDATE_VISUAL_GOLDENS=1 npm run test:visual
+npm run test:visual
 ```
 
-Cheap Eevee ortho snapshot for the visual bible; not part of `npm test`.
-
-## Export conventions (keep `tests/kit.test.cjs` green)
-
-- One library GLB per kit; multiple named roots with `asset_id` extras.
-- No cameras / punctual lights in the file.
-- Embed textures (retriever fur must stay bufferView-backed).
-- Y-up glTF; metres; ground pivot (`jam_pivot: ground`) unless a prop is centre-pivoted (kickball / records).
-- Player actions named exactly `idle`, `walk`, `kick`.
-
-## Compression
-
-Shipped GLBs stay **uncompressed** (vanilla `GLTFLoader` only). See `scripts/compress-glbs.mjs` and the GLB follow-up section in [`../ASSET-BUDGET.md`](../ASSET-BUDGET.md) before enabling Draco / meshopt.
+The deterministic regression set uses lossless PNGs, fixed time and camera, and
+low quality. Full-resolution captures in `renders/astra/` cover detailed rendering.
+Missing baselines fail. `npm test` checks the committed engine before rebuilding;
+after changing runtime source, run `npm run build` before testing/committing.

@@ -60,10 +60,15 @@ def mesh_objects(root):
 
 def count_triangles(root) -> int:
     total = 0
+    depsgraph = bpy.context.evaluated_depsgraph_get()
     for o in mesh_objects(root):
-        mesh = o.data
-        mesh.calc_loop_triangles()
-        total += len(mesh.loop_triangles)
+        evaluated = o.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        try:
+            mesh.calc_loop_triangles()
+            total += len(mesh.loop_triangles)
+        finally:
+            evaluated.to_mesh_clear()
     return total
 
 
@@ -126,6 +131,11 @@ def load_kit_scene(kit: dict) -> str:
     reset_scene()
     if blend.is_file():
         bpy.ops.wm.open_mainfile(filepath=str(blend))
+        bpy.context.scene.frame_set(1)
+        for obj in bpy.data.objects:
+            obj.hide_set(False)
+            obj.hide_viewport = False
+        bpy.context.view_layer.update()
         return f"blend:{blend.name}"
     if glb.is_file():
         bpy.ops.import_scene.gltf(filepath=str(glb))

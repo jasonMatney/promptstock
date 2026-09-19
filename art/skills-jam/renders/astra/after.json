@@ -1,0 +1,100 @@
+{
+  "issues": [],
+  "results": [
+    {
+      "kit": {
+        "finiteTransforms": true,
+        "placedRoots": 54,
+        "backgroundPeople": 73,
+        "triangles": 603105,
+        "meshBatches": 221,
+        "clips": [
+          "idle",
+          "walk",
+          "kick"
+        ],
+        "enabled": true
+      },
+      "renderer": {
+        "calls": 561,
+        "triangles": 6326793
+      }
+    },
+    {
+      "kit": {
+        "finiteTransforms": true,
+        "placedRoots": 54,
+        "backgroundPeople": 73,
+        "triangles": 603105,
+        "meshBatches": 221,
+        "clips": [
+          "idle",
+          "walk",
+          "kick"
+        ],
+        "enabled": true
+      },
+      "renderer": {
+        "calls": 529,
+        "triangles": 6313963
+      }
+    },
+    {
+      "kit": {
+        "finiteTransforms": true,
+        "placedRoots": 54,
+        "backgroundPeople": 73,
+        "triangles": 603105,
+        "meshBatches": 221,
+        "clips": [
+          "idle",
+          "walk",
+          "kick"
+        ],
+        "enabled": true
+      },
+      "renderer": {
+        "calls": 604,
+        "triangles": 6341238
+      }
+    },
+    {
+      "kit": {
+        "finiteTransforms": true,
+        "placedRoots": 54,
+        "backgroundPeople": 73,
+        "triangles": 603105,
+        "meshBatches": 221,
+        "clips": [
+          "idle",
+          "walk",
+          "kick"
+        ],
+        "enabled": true
+      },
+      "renderer": {
+        "calls": 750,
+        "triangles": 6413251
+      }
+    },
+    {
+      "kit": {
+        "finiteTransforms": true,
+        "placedRoots": 54,
+        "backgroundPeople": 73,
+        "triangles": 603105,
+        "meshBatches": 221,
+        "clips": [
+          "idle",
+          "walk",
+          "kick"
+        ],
+        "enabled": true
+      },
+      "renderer": {
+        "calls": 643,
+        "triangles": 6360666
+      }
+    }
+  ]
+}

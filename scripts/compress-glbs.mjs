@@ -50,10 +50,8 @@ const io = new NodeIO()
     'meshopt.encoder': MeshoptEncoder,
   });
 
-const files = fs
-  .readdirSync(modelsDir)
-  .filter((f) => f.endsWith('.glb'))
-  .sort();
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'art/skills-jam/blender/kits.manifest.json'), 'utf8'));
+const files = manifest.kits.map(kit => kit.glb).sort();
 
 if (!files.length) {
   console.error('No GLBs under assets/models/');

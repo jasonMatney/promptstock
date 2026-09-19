@@ -59,3 +59,13 @@ test('rapid selections supersede fades and pause cancels pending playback',async
  const abandoned=m.playCamp();clock.step(200);const final=m.playFinale();assert.equal(await abandoned,false);clock.step(700);await Promise.resolve();assert.equal(m.track.loop,false);m.track.resolve();assert.equal(await final,true);
  const canceled=m.playRecord('Create');clock.step(200);m.pause();clock.step(1000);assert.equal(await canceled,false);assert.equal(m.track.paused,true);assert.equal(m.state.title,'One Island One View');assert.equal(m.track.volume,.65);assert.equal(old.src,'');
 });
+test('leaving the finale restores the previous track, position and play state',async()=>{
+ const {FestivalMusic,FINALE_TRACK}=await modulePromise;const m=new FestivalMusic({fadeMs:0,AudioClass:AudioMock});
+ const first=m.playRecord('Solve');m.track.resolve();await first;m.track.currentTime=37;const before=m.track;
+ const finale=m.playFinale();m.track.resolve();await finale;assert.equal(m.state.title,FINALE_TRACK.title);
+ const restored=m.leaveFinale();assert.equal(m.src,'audio/records/solve.mp3');m.track.resolve();assert.equal(await restored,true);assert.equal(m.state.title,'Solve');assert.equal(m.state.currentTime,37);assert.equal(m.state.playing,true);assert.equal(before.src,'');
+});
+test('leaving a muted finale stays muted while restoring the previous song',async()=>{
+ const {FestivalMusic}=await modulePromise;const m=new FestivalMusic({fadeMs:0,AudioClass:AudioMock});
+ const first=m.playRecord('Create');m.track.resolve();await first;m.pause();const finale=m.playFinale();m.track.resolve();await finale;const restored=m.leaveFinale();assert.equal(m.wantsPlay,false);assert.equal(await restored,false);assert.equal(m.state.title,'Create');assert.equal(m.state.playing,false);
+});

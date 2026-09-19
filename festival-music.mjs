@@ -10,7 +10,7 @@ export function recordTrack(name){return RECORD_TRACKS.find(t=>t.title.toLowerCa
 export class FestivalMusic {
   constructor({AudioClass=globalThis.Audio,onChange=()=>{},revokeURL=url=>URL.revokeObjectURL(url),fadeMs=700,now=()=>performance.now(),schedule=(fn,ms)=>globalThis.setTimeout(fn,ms),cancelTimer=id=>globalThis.clearTimeout(id)}={}){
     this.fadeMs=fadeMs;this.now=now;this.schedule=schedule;this.cancelTimer=cancelTimer;this.transition=0;this.fade=null;this.AudioClass=AudioClass;this.onChange=onChange;this.revokeURL=revokeURL;
-    this.track=null;this.title=BACKGROUND_TRACK.title;this.src=null;this.status='ready';this.volume=.65;this.request=0;this.wantsPlay=false;
+    this.track=null;this.title=BACKGROUND_TRACK.title;this.src=null;this.status='ready';this.volume=.65;this.request=0;this.wantsPlay=false;this.finaleReturn=null;
   }
   get state(){return {title:this.title,src:this.src,status:this.status,playing:this.status==='playing',volume:this.volume,currentTime:this.pendingSrc?0:this.track?.currentTime||0,duration:!this.pendingSrc&&Number.isFinite(this.track?.duration)?this.track.duration:0};}
   emit(){this.onChange(this.state);}
@@ -18,7 +18,8 @@ export class FestivalMusic {
     this.cancelFade();
     this.request++;this.wantsPlay=false;const old=this.track;this.track=null;
     if(old){old.pause();old.removeAttribute('src');old.load();}
-    if(this.src?.startsWith('blob:'))this.revokeURL(this.src);
+    // Keep a browser-local track alive while the finale temporarily replaces it.
+    if(this.src?.startsWith('blob:')&&this.finaleReturn?.src!==this.src)this.revokeURL(this.src);
     this.src=src;this.title=title;this.status='ready';
     const track=new this.AudioClass();this.track=track;track.preload='none';track.loop=true;track.volume=this.volume;
     track.addEventListener('playing',()=>{if(this.track!==track)return;if(!this.wantsPlay){track.pause();return;}this.status='playing';this.emit();});
@@ -61,6 +62,16 @@ export class FestivalMusic {
   playRecord(name){const item=recordTrack(name);if(!item)return Promise.resolve(false);const src=item.src+(item.revision?'?v='+item.revision:'');return this.switchTo(src,item.title);}
   playCamp(){return this.switchTo(CAMP_TRACK.src,CAMP_TRACK.title);}
   leaveCamp(){if(this.src!==CAMP_TRACK.src&&!this.fade)return;return this.switchTo(BACKGROUND_TRACK.src,BACKGROUND_TRACK.title,{autoplay:this.wantsPlay});}
-  playFinale(){return this.switchTo(FINALE_TRACK.src,FINALE_TRACK.title,{loop:false,restart:true});}
+  playFinale(){
+    if(this.src!==FINALE_TRACK.src&&!this.finaleReturn)this.finaleReturn=this.track?{src:this.src,title:this.title,currentTime:this.track.currentTime||0,loop:this.track.loop,shouldPlay:this.wantsPlay}:null;
+    return this.switchTo(FINALE_TRACK.src,FINALE_TRACK.title,{loop:false,restart:true});
+  }
+  async leaveFinale(){
+    const restore=this.finaleReturn;this.finaleReturn=null;
+    if(!restore||!restore.src||this.src!==FINALE_TRACK.src)return false;
+    const ok=await this.switchTo(restore.src,restore.title,{loop:restore.loop!==false,autoplay:restore.shouldPlay});
+    if(ok&&this.track){try{this.track.currentTime=restore.currentTime||0;}catch{}}
+    return ok;
+  }
   setVolume(value){this.volume=Math.max(0,Math.min(1,Number(value)||0));if(this.track&&!this.fade)this.track.volume=this.volume;this.emit();}
 }

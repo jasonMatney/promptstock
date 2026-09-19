@@ -54,7 +54,7 @@ Rules of thumb:
 
 ## Blender → GLB pipeline (P7)
 
-Editable sources (optional): `art/skills-jam/blender/*.blend` — see [`blender/README.md`](blender/README.md) and `blender/kits.manifest.json`.
+Editable sources (optional): `art/skills-jam/blender/sources/*.blend` — see [`blender/README.md`](blender/README.md) and `blender/kits.manifest.json`.
 
 ```sh
 npm run export:kits          # blender --background --python export_kits.py

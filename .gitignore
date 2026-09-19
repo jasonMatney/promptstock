@@ -14,3 +14,7 @@ art/skills-jam/renders/artifacts/
 
 # Optional Blender turnaround stills (regenerate with npm run render:turnaround)
 art/skills-jam/renders/turnarounds/*.png
+
+.tools/
+*.blend1
+__pycache__/

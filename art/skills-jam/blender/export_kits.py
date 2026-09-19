@@ -5,8 +5,8 @@ Usage (from repo root):
   blender --background --python art/skills-jam/blender/export_kits.py -- --kit player_jam
   blender --background --python art/skills-jam/blender/export_kits.py -- --list
 
-Expects .blend files next to this script (see kits.manifest.json). After export,
-re-run measure_kits.py (or npm run check:glb-budgets) and commit GLBs + REPORT.json.
+Resolves sources/*.blend through kits.manifest.json. After export,
+compress GLBs, run measure:kits and check:glb-budgets, then commit GLBs + REPORT.json.
 """
 from __future__ import annotations
 
@@ -68,11 +68,13 @@ def export_kit(kit: dict) -> Path:
     if not blend.is_file():
         raise FileNotFoundError(
             f"Missing Blender source: {blend}\n"
-            f"Place editable kits under art/skills-jam/blender/ "
+            f"Place editable kits under art/skills-jam/blender/sources/ "
             f"(see README.md). Shipped GLBs in assets/models/ stay playable without them."
         )
 
     bpy.ops.wm.open_mainfile(filepath=str(blend))
+
+    bpy.context.scene.frame_set(1)
 
     # Drop studio clutter so kit.test keeps rejecting cameras / punctual lights.
     for cam in list(bpy.data.cameras):
@@ -99,6 +101,8 @@ def export_kit(kit: dict) -> Path:
         while stack:
             o = stack.pop()
             o.hide_set(False)
+            o.hide_viewport = False
+            o.hide_render = False
             o.select_set(True)
             stack.extend(list(o.children))
     bpy.context.view_layer.objects.active = roots[0]
@@ -113,8 +117,11 @@ def export_kit(kit: dict) -> Path:
         export_extras=True,
         export_cameras=False,
         export_lights=False,
-        export_apply=False,
-        export_animations=True,
+        export_apply=True,
+        export_animations=bool(kit.get("requiredClips")),
+        export_animation_mode="NLA_TRACKS",
+        export_nla_strips=True,
+        export_force_sampling=True,
         export_skins=True,
         export_morph=True,
         export_yup=True,

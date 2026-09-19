@@ -15,6 +15,8 @@ const passArgs = process.argv.slice(2);
 
 function findBlender() {
   if (process.env.BLENDER && existsSync(process.env.BLENDER)) return process.env.BLENDER;
+  const local = join(root, '.tools/Blender.app/Contents/MacOS/Blender');
+  if (existsSync(local)) return local;
   const which = spawnSync('which', ['blender'], { encoding: 'utf8' });
   if (which.status === 0) return which.stdout.trim();
   const candidates = [
@@ -39,9 +41,9 @@ Or set BLENDER=/path/to/blender. Pipeline docs: art/skills-jam/blender/README.md
   process.exit(1);
 }
 
-const blends = readdirSync(blenderDir).filter((f) => f.endsWith('.blend'));
+const blends = readdirSync(join(blenderDir, 'sources')).filter((f) => f.endsWith('.blend'));
 if (!blends.length && !passArgs.includes('--list')) {
-  console.error(`No .blend sources under art/skills-jam/blender/.
+  console.error(`No .blend sources under art/skills-jam/blender/sources/.
 
 Shipped GLBs in assets/models/ remain playable. To re-export:
   1. Copy editable kits here (see kits.manifest.json basenames).
@@ -52,7 +54,7 @@ Docs: art/skills-jam/blender/README.md`);
   process.exit(1);
 }
 
-const args = ['--background', '--python', script, '--', ...passArgs];
+const args = ['--background', '--python-exit-code', '1', '--python', script, '--', ...passArgs];
 console.log(`Using ${blender}`);
 const result = spawnSync(blender, args, { cwd: root, stdio: 'inherit' });
 process.exit(result.status ?? 1);

@@ -1,5 +1,15 @@
 # Art handoff pipeline (Astra → Blender → ship)
 
+> **Implementation update — 2026-09-19:** The handoff below is historical. Five
+> editable Blender kits now live in `../blender/sources/`, recovered from existing
+> local files. The atelier pass adds authored tent canopies, timber, brass lanterns,
+> trim and prop details. Use [the current workflow](../blender/README.md):
+> `npm run author:kits` (optional regeneration), then `npm run pipeline:kits`.
+> Export → compress → measure → budget-check → build → test is the validated order.
+> Regression captures are now fixed-time PNGs; missing baselines fail explicitly.
+> The original local music restoration and overnight round reset are retained.
+
+
 **OpenAI Astra briefing:** [`ASTRA-UPDATE.md`](ASTRA-UPDATE.md) — what Grok shipped (PRs #1–#12), limitations, and what Astra should do next.
 
 Promptstock does **not** generate `.blend` files from GPT Image. Astra + GPT Image produce the visual bible, concept sheets, texture tiles, and Blender reference turnarounds. Humans (or Astra-in-Blender) author hero kits; `npm run export:kits` ships GLB.
