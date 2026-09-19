@@ -1,0 +1,78 @@
+{
+  "description": "Hero kit libraries for Blender → GLB export. Place matching .blend files beside this manifest (same basename as blend field).",
+  "eyeHeightM": 1.82,
+  "outputDir": "assets/models",
+  "reportPath": "art/skills-jam/REPORT.json",
+  "kits": [
+    {
+      "id": "tent_kit",
+      "blend": "tent_kit.blend",
+      "glb": "tent_kit.glb",
+      "roots": ["tent_ai", "tent_maker", "tent_aid", "tent_swap", "newsstand"],
+      "triangleBudgetPerRoot": 4000
+    },
+    {
+      "id": "props_kit",
+      "blend": "props_kit.blend",
+      "glb": "props_kit.glb",
+      "roots": [
+        "kickball_globe",
+        "vinyl_crate",
+        "record_communicate",
+        "record_solve",
+        "record_create",
+        "record_connect",
+        "record_stay_curious",
+        "jar_prompt",
+        "jar_tool",
+        "jar_context",
+        "record_table",
+        "skill_cards_stand",
+        "wood_signs",
+        "water_bottle",
+        "backpack_teal",
+        "backpack_rust",
+        "first_aid_robot"
+      ],
+      "triangleBudgetPerRoot": 1500
+    },
+    {
+      "id": "player_jam",
+      "blend": "player_jam.blend",
+      "glb": "player_jam.glb",
+      "roots": ["player_jam"],
+      "triangleBudgetPerRoot": 15000,
+      "requiredClips": ["idle", "walk", "kick"]
+    },
+    {
+      "id": "crowd_kit",
+      "blend": "crowd_kit.blend",
+      "glb": "crowd_kit.glb",
+      "roots": ["crowd_1", "crowd_2", "crowd_3", "crowd_4", "crowd_5", "crowd_6", "golden_retriever"],
+      "triangleBudgetPerRoot": 12000
+    },
+    {
+      "id": "world_dressing",
+      "blend": "world_dressing.blend",
+      "glb": "world_dressing.glb",
+      "roots": [
+        "tree_oak",
+        "tree_birch",
+        "tree_pine",
+        "grass_tuft",
+        "string_light_cable",
+        "stage_block",
+        "mountain_lake_sky_card"
+      ],
+      "triangleBudgetPerRoot": 4000
+    }
+  ],
+  "byteCeilings": {
+    "crowd_kit.glb": 4718592,
+    "tent_kit.glb": 1572864,
+    "player_jam.glb": 1048576,
+    "props_kit.glb": 786432,
+    "world_dressing.glb": 786432,
+    "allGlbsCombined": 6815744
+  }
+}

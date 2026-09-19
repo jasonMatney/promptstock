@@ -52,9 +52,26 @@ Rules of thumb:
 - Do **not** commit `*.tmp` / `*.candidate` files.
 - After changing splash path or textures that affect framing, run `npm test` and ideally `npm run test:visual`.
 
-## GLB follow-up (not in this PR)
+## Blender → GLB pipeline (P7)
+
+Editable sources (optional): `art/skills-jam/blender/*.blend` — see [`blender/README.md`](blender/README.md) and `blender/kits.manifest.json`.
+
+```sh
+npm run export:kits          # blender --background --python export_kits.py
+npm run measure:kits         # refresh REPORT.json (blend or GLB fallback)
+npm run check:glb-budgets    # triangles / bbox / byte ceilings (no Blender)
+npm run render:turnaround    # optional Eevee still → renders/turnarounds/
+```
+
+Workflow: edit in Blender → `export:kits` → `measure:kits` → `check:glb-budgets` → `npm test` → commit GLBs + `REPORT.json`. If Blender or `.blend` files are missing, `export:kits` exits with install / source instructions; shipped GLBs remain playable.
+
+Budgets are also summarized in `MEASUREMENTS.md` when generated with `npm run measure:kits -- --write-md`.
+
+## GLB compression (deferred — stub only)
 
 Vanilla `GLTFLoader` only (no `DRACOLoader` / `MeshoptDecoder` in `jam-kit.mjs`). Aggressive Draco/meshopt would break boot until decoders are wired and wasm/js is shipped.
+
+`npm run compress:glbs` is a **stub**: it prints sizes and refuses to mutate assets until decoders exist.
 
 Trial measurements (local, not shipped):
 
@@ -68,11 +85,11 @@ Trial measurements (local, not shipped):
 
 Recommended next PR:
 
-1. Add Three.js Draco + meshopt decoder support in `jam-kit.mjs` (and esbuild copy of wasm/js).
-2. Re-export or `gltf-transform` compress kits; re-hash via `npm run build` (`layout.json` modelRevisions).
-3. Re-run `npm test` (crowd bake / kit tests) and `UPDATE_VISUAL_GOLDENS=1 npm run test:visual` only if intentional look change — document in the PR.
+1. Add Three.js Draco + meshopt decoder support in `jam-kit.mjs` (and copy wasm/js in `scripts/build.mjs`).
+2. Implement compression in `scripts/compress-glbs.mjs` via `@gltf-transform/cli`; re-hash via `npm run build`.
+3. Re-run `npm test` and `UPDATE_VISUAL_GOLDENS=1 npm run test:visual` only if the look changes — document in the PR.
 
-Tools already usable locally: `npx @gltf-transform/cli inspect|optimize|quantize`, Blender CLI, ImageMagick/`sharp`.
+Tools already usable locally: `npx @gltf-transform/cli inspect|optimize|quantize`, Blender CLI (`npm run export:kits`), ImageMagick/`sharp`.
 
 ## Build copy rules
 

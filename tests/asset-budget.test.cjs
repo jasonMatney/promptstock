@@ -38,3 +38,21 @@ test('visual bible stub and asset budget docs exist', () => {
   assert.match(bible, /gameDebug/);
   assert.match(bible, /test:visual/);
 });
+
+test('blender kit pipeline docs and scripts exist', () => {
+  assert.ok(fs.existsSync('art/skills-jam/blender/README.md'));
+  assert.ok(fs.existsSync('art/skills-jam/blender/kits.manifest.json'));
+  assert.ok(fs.existsSync('art/skills-jam/blender/export_kits.py'));
+  assert.ok(fs.existsSync('art/skills-jam/blender/measure_kits.py'));
+  assert.ok(fs.existsSync('scripts/export-kits.mjs'));
+  assert.ok(fs.existsSync('scripts/check-glb-budgets.mjs'));
+  assert.ok(fs.existsSync('scripts/compress-glbs.mjs'));
+  const manifest = JSON.parse(fs.readFileSync('art/skills-jam/blender/kits.manifest.json', 'utf8'));
+  assert.equal(manifest.kits.length, 5);
+  for (const kit of manifest.kits) {
+    assert.ok(fs.existsSync(path.join('assets/models', kit.glb)), kit.glb);
+  }
+  const budget = fs.readFileSync('art/skills-jam/ASSET-BUDGET.md', 'utf8');
+  assert.match(budget, /export:kits/);
+  assert.match(budget, /compress-glbs/);
+});
