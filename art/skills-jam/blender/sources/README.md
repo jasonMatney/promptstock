@@ -1,7 +1,9 @@
-# Blender sources
+# Editable working sources
 
-Save hero kit `.blend` files here (`tent_kit.blend`, `props_kit.blend`, `player_jam.blend`, `crowd_kit.blend`, `world_dressing.blend`).
+These five `.blend` files contain the recovered original art and packed textures.
+`tent_kit.blend` and `props_kit.blend` include the atelier graphics pass. The other
+kits retain their original geometry, rigs and animation. Root names match the
+manifest; its `blend` paths point directly here.
 
-Large blends may use Git LFS later — do not invent placeholder binaries for CI. Gameplay ships from `assets/models/*.glb` only.
-
-Before `npm run export:kits`, copy or symlink each blend beside `../kits.manifest.json` (export resolves blends next to the manifest). Image → Blender handoff: [`../../pipeline/README.md`](../../pipeline/README.md).
+Edit here, then run `npm run pipeline:kits`. See [the workflow](../README.md).
+No placeholder files, copying or symlinking are required.

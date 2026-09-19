@@ -181,7 +181,7 @@ async function main() {
       pageErrors: consoleErrors.length,
     });
     if (consoleErrors.length) {
-      console.warn('smoke-browser: page reported errors (non-fatal if capture succeeded):', consoleErrors.slice(0, 5));
+      throw new Error('Browser errors: ' + consoleErrors.slice(0, 5).join('\n'));
     }
   } finally {
     if (browser) await browser.close().catch(() => {});

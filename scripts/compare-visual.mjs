@@ -11,11 +11,12 @@
  *   VISUAL_BOOT_MS       boot timeout (default 120000)
  *   VISUAL_SETTLE_MS     settle after quality/camera (default 800)
  *   VISUAL_VIEWPORT_W/H  capture size (default 480x270 — keeps goldens small)
- *   VISUAL_JPEG_QUALITY  JPEG quality 0–1 (default 0.72)
+ *   VISUAL_QUALITY       high or low (default low)
+ *   VISUAL_GOLDENS_DIR   optional baseline directory for isolated validation
  *   SMOKE_PORT, CHROME_PATH — same as smoke:browser
  *
  * Limitations: headless GPU / fonts can differ across machines. We force low
- * quality, a fixed viewport, deviceScaleFactor=1, and a short settle wait.
+ * quality by default, a fixed viewport, deviceScaleFactor=1, and frozen time.
  * Do not put this in default `npm test`.
  */
 import { createServer } from 'node:http';
@@ -35,7 +36,7 @@ import jpeg from 'jpeg-js';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PAGE = '/skills-jam-3d.html';
-const GOLDENS_DIR = join(ROOT, 'art/skills-jam/renders/goldens');
+const GOLDENS_DIR = process.env.VISUAL_GOLDENS_DIR ? resolve(process.env.VISUAL_GOLDENS_DIR) : join(ROOT, 'art/skills-jam/renders/goldens');
 const ARTIFACTS_DIR = join(ROOT, 'art/skills-jam/renders/artifacts');
 const BOOT_MS = Number(process.env.VISUAL_BOOT_MS || process.env.SMOKE_BOOT_MS || 120_000);
 const SETTLE_MS = Number(process.env.VISUAL_SETTLE_MS || 800);
@@ -43,7 +44,7 @@ const PORT = Number(process.env.SMOKE_PORT || 0);
 const THRESHOLD = Number(process.env.VISUAL_THRESHOLD || 0.02);
 const VIEW_W = Number(process.env.VISUAL_VIEWPORT_W || 480);
 const VIEW_H = Number(process.env.VISUAL_VIEWPORT_H || 270);
-const JPEG_Q = Number(process.env.VISUAL_JPEG_QUALITY || 0.72);
+const QUALITY = process.env.VISUAL_QUALITY || 'low';
 const UPDATE =
   process.env.UPDATE_VISUAL_GOLDENS === '1' || process.argv.includes('--update');
 
@@ -146,15 +147,6 @@ function dataUrlToRgba(dataUrl) {
   return { width: png.width, height: png.height, data: png.data };
 }
 
-function writeJpeg(file, rgba) {
-  mkdirSync(resolve(file, '..'), { recursive: true });
-  const encoded = jpeg.encode(
-    { data: rgba.data, width: rgba.width, height: rgba.height },
-    Math.round(JPEG_Q * 100),
-  );
-  writeFileSync(file, encoded.data);
-}
-
 function writePng(file, rgba) {
   mkdirSync(resolve(file, '..'), { recursive: true });
   const png = new PNG({ width: rgba.width, height: rgba.height });
@@ -194,6 +186,9 @@ async function main() {
     const page = await context.newPage();
     page.setDefaultTimeout(BOOT_MS);
 
+    const browserErrors = [];
+    page.on('pageerror', error => browserErrors.push(error.message));
+    page.on('console', message => { if (message.type() === 'error') browserErrors.push(message.text()); });
     await page.goto(`${origin}${PAGE}`, { waitUntil: 'domcontentloaded', timeout: BOOT_MS });
     await page.waitForFunction(
       () =>
@@ -202,13 +197,14 @@ async function main() {
       { timeout: BOOT_MS },
     );
 
-    await page.evaluate(() => {
+    await page.evaluate((quality) => {
+      window.gameDebug.freezeFrame(.5);
       try {
-        window.gameDebug.setQuality('low');
+        window.gameDebug.setQuality(quality);
       } catch {
         /* optional */
       }
-    });
+    }, QUALITY);
     await page.waitForTimeout(SETTLE_MS);
 
     const cameras = await page.evaluate(() => window.gameDebug.listCameras());
@@ -217,12 +213,12 @@ async function main() {
     }
 
     const shots = await page.evaluate(
-      async ({ names, jpegQ }) => {
+      async ({ names }) => {
         const out = [];
         for (const name of names) {
           window.gameDebug.setCamera(name);
           await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-          // Prefer JPEG for smaller goldens; fall back to gameDebug PNG capture.
+          // Lossless capture at frozen simulation time.
           const canvas =
             window.skillsJam?.engine?.canvas ||
             window.skillsJam?.engine?.renderer?.domElement ||
@@ -235,7 +231,7 @@ async function main() {
               // capture draws then returns PNG — we still re-encode via canvas when possible
               window.gameDebug.capture(name);
             }
-            dataUrl = canvas.toDataURL('image/jpeg', jpegQ);
+            dataUrl = canvas.toDataURL('image/png');
           } else {
             dataUrl = window.gameDebug.capture(name);
           }
@@ -243,21 +239,27 @@ async function main() {
         }
         return out;
       },
-      { names: cameras, jpegQ: JPEG_Q },
+      { names: cameras },
     );
 
     let failed = 0;
 
     for (const { name, dataUrl } of shots) {
       const actual = dataUrlToRgba(dataUrl);
-      const goldenPath = join(GOLDENS_DIR, `${name}.jpg`);
-      const actualPath = join(ARTIFACTS_DIR, `${name}.actual.jpg`);
-      writeJpeg(actualPath, actual);
+      const goldenPath = join(GOLDENS_DIR, `${name}.png`);
+      const actualPath = join(ARTIFACTS_DIR, `${name}.actual.png`);
+      writePng(actualPath, actual);
 
-      if (UPDATE || !existsSync(goldenPath)) {
-        writeJpeg(goldenPath, actual);
+      if (!UPDATE && !existsSync(goldenPath)) {
+        failed++;
+        console.error(`Missing golden ${name}; review and explicitly update baselines.`);
+        continue;
+      }
+
+      if (UPDATE) {
+        writePng(goldenPath, actual);
         console.log(
-          `compare-visual: wrote golden ${name}.jpg (${statSync(goldenPath).size} bytes, ${actual.width}x${actual.height})`,
+          `compare-visual: wrote golden ${name}.png (${statSync(goldenPath).size} bytes, ${actual.width}x${actual.height})`,
         );
         continue;
       }
@@ -306,6 +308,7 @@ async function main() {
       goldens: GOLDENS_DIR,
     });
 
+    if (browserErrors.length) throw new Error(browserErrors.join('\n'));
     if (failed > 0) process.exitCode = 1;
   } finally {
     if (browser) await browser.close().catch(() => {});

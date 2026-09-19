@@ -48,7 +48,13 @@ await copyFile('festival-play.css', 'dist/festival-play.css');
 function shouldShipAsset(src) {
   const rel = relative(process.cwd(), src).replace(/\\/g, '/');
   if (!rel.startsWith('assets')) return true;
+  if (rel.startsWith('assets/models/')) {
+    return /^assets\/models\/(?:layout\.json|(?:tent_kit|props_kit|player_jam|crowd_kit|world_dressing)\.glb)$/.test(rel);
+  }
   if (/(^|\/)\.DS_Store$/i.test(rel)) return false;
+  if (rel === 'assets/festival-notice.png') return false;
+  // Finder/cloud-sync conflict copies are never referenced by the runtime.
+  if (/ \d+\.[^/]+$/.test(rel)) return false;
   if (/\.tmp$/i.test(rel) || /\.candidate$/i.test(rel)) return false;
   if (/skills-jam-2026\.(jpe?g|png)$/i.test(rel)) return false;
   if (/\/README\.md$/i.test(rel)) return false;

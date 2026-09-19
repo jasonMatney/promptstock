@@ -1,4 +1,4 @@
-"""Cheap orthographic turnaround still from a shipped GLB (no .blend required).
+"""Orthographic studio turnaround from an editable source hierarchy.
 
 Usage:
   blender --background --python art/skills-jam/blender/turnaround.py -- --kit player_jam
@@ -8,6 +8,7 @@ Writes PNG under art/skills-jam/renders/turnarounds/. Opt-in via npm run render:
 """
 from __future__ import annotations
 
+import json
 import math
 import sys
 from pathlib import Path
@@ -86,11 +87,23 @@ def main():
         raise SystemExit(f"Missing {glb}")
 
     reset_scene()
-    bpy.ops.import_scene.gltf(filepath=str(glb))
+    manifest = json.loads((HERE / 'kits.manifest.json').read_text())
+    entry = next(k for k in manifest['kits'] if k['id'] == kit)
+    source = HERE / entry['blend']
+    if not source.is_file():
+        raise SystemExit('Turnarounds need the editable source: ' + str(source))
+    bpy.ops.wm.open_mainfile(filepath=str(source))
+    bpy.context.scene.frame_set(1)
     root = find_root(root_name)
     if not root:
         raise SystemExit(f"Root {root_name!r} not found in {glb.name}")
 
+    selected = {root, *root.children_recursive}
+    for obj in bpy.data.objects:
+        obj.hide_render = obj not in selected
+        obj.hide_viewport = False
+        obj.hide_set(False)
+    bpy.context.view_layer.update()
     mn, mx = world_bbox_for(root)
     center = (mn + mx) * 0.5
     size = mx - mn
@@ -98,33 +111,35 @@ def main():
 
     # Simple studio: soft light + orthographic camera
     light_data = bpy.data.lights.new(name="TurnKey", type="AREA")
-    light_data.energy = 400
+    light_data.energy = 1800
     light_data.size = radius
     light = bpy.data.objects.new("TurnKey", light_data)
     bpy.context.collection.objects.link(light)
     light.location = center + Vector((radius, -radius, radius))
+    light.rotation_euler = (center-light.location).to_track_quat('-Z','Y').to_euler()
 
     fill_data = bpy.data.lights.new(name="TurnFill", type="AREA")
-    fill_data.energy = 120
+    fill_data.energy = 900
     fill_data.size = radius
     fill = bpy.data.objects.new("TurnFill", fill_data)
     bpy.context.collection.objects.link(fill)
-    fill.location = center + Vector((-radius * 0.8, radius * 0.4, radius * 0.6))
+    fill.location = center + Vector((-radius * 0.8, -radius * 0.4, radius * 0.6))
+    fill.rotation_euler = (center-fill.location).to_track_quat('-Z','Y').to_euler()
 
     cam_data = bpy.data.cameras.new("TurnCam")
     cam_data.type = "ORTHO"
-    cam_data.ortho_scale = max(size.x, size.z) * 1.35 + 0.2
+    cam_data.ortho_scale = max(size.x, size.y, size.z) * 1.45 + 0.2
     cam = bpy.data.objects.new("TurnCam", cam_data)
     bpy.context.collection.objects.link(cam)
-    cam.location = center + Vector((0, -radius * 2.2, size.z * 0.15))
+    cam.location = center + Vector((radius * 1.25, -radius * 2.2, size.z * 0.75))
     direction = center - cam.location
     cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     bpy.context.scene.camera = cam
 
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE_NEXT"
-    scene.render.resolution_x = 512
-    scene.render.resolution_y = 512
+    scene.render.resolution_x = 1200
+    scene.render.resolution_y = 900
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
     OUT_DIR.mkdir(parents=True, exist_ok=True)

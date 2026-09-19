@@ -5,6 +5,21 @@ async function load(){
   return import('../game-debug.mjs');
 }
 
+test('frozen review time sets animation pose and resume clears camera ownership',async()=>{
+  const {attachGameDebug}=await load();let pose;
+  const engine={jamKit:{mixers:[{mixer:{setTime(t){pose=t;}}}]},renderer:{shadowMap:{}},debugCamera:[[1,2,3],[0,0,0]]};
+  const api=attachGameDebug({engine});
+  assert.equal(api.freezeFrame(.75),.75);
+  assert.equal(engine.debugFrozenTime,.75);
+  assert.equal(pose,.75);
+  assert.equal(engine.renderer.shadowMap.needsUpdate,true);
+  assert.throws(()=>api.freezeFrame(NaN),/finite time/);
+  assert.equal(engine.debugFrozenTime,.75);
+  api.resume();
+  assert.equal(engine.debugFrozenTime,undefined);
+  assert.equal(engine.debugCamera,null);
+});
+
 function memoryStorage(seed={}){
   const map=new Map(Object.entries(seed));
   return {
@@ -19,7 +34,7 @@ test('game-debug exports camera presets, locations, and quality key',async()=>{
   const {CAMERA_PRESETS,DEFAULT_LOCATIONS,QUALITY_STORAGE_KEY,attachGameDebug,loadQualityPreference,saveQualityPreference}=await load();
   assert.equal(QUALITY_STORAGE_KEY,'skillsjam.quality.v1');
   assert.deepEqual(Object.keys(CAMERA_PRESETS).sort(),[
-    'camp','festival_stage_wide','meadow_path','pier','player_closeup',
+    'atelier_clinic','atelier_tents','camp','festival_stage_wide','meadow_path','pier','player_closeup',
   ]);
   for(const [name,[pos,target]] of Object.entries(CAMERA_PRESETS)){
     assert.equal(pos.length,3,name+' position');
@@ -76,7 +91,7 @@ test('attachGameDebug exposes the console API shape on a mock host',async()=>{
   Object.defineProperty(globalThis,'localStorage',{value:store,configurable:true});
   try{
     const api=attachGameDebug(host);
-    assert.equal(api.version,'1.4.0');
+    assert.equal(api.version,'1.5.0');
     assert.deepEqual(api.listLocations(),DEFAULT_LOCATIONS);
     assert.deepEqual(api.listCameras().sort(),Object.keys(CAMERA_PRESETS).sort());
 

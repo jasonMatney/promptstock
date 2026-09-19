@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check:engine": "node scripts/check-engine.mjs",
-    "test": "npm run build && npm run check:engine && node --test tests/*.test.cjs",
+    "test": "npm run check:engine && npm run build && node --test tests/*.test.cjs",
     "review:repair": "esbuild tests/fixtures/repair-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/repair-preview.js",
     "review:mixer": "esbuild tests/fixtures/mixer-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/mixer-preview.js",
     "review:records": "esbuild tests/fixtures/records-preview.mjs --bundle --format=esm --target=es2022 --outfile=tests/fixtures/records-preview.js",
@@ -19,7 +19,10 @@
     "check:glb-budgets": "node scripts/check-glb-budgets.mjs",
     "compress:glbs": "node scripts/compress-glbs.mjs",
     "render:turnaround": "node scripts/render-turnaround.mjs",
-    "pipeline:check": "node scripts/pipeline-check.mjs"
+    "pipeline:check": "node scripts/pipeline-check.mjs",
+    "pipeline:kits": "npm run export:kits && npm run compress:glbs && npm run measure:kits -- --write-md && npm run check:glb-budgets && npm run build && npm test",
+    "author:kits": "node scripts/author-kits.mjs",
+    "capture:art": "node scripts/capture-art-review.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",
@@ -32,7 +35,7 @@
     "jpeg-js": "^0.4.4",
     "meshoptimizer": "^0.25.0",
     "pixelmatch": "^7.2.0",
-    "playwright": "^1.55.0",
+    "playwright": "1.55.1",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.4"
   }

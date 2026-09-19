@@ -14,7 +14,7 @@ npm test
 python3 scripts/preview-kit.py 8875
 ```
 
-`npm test` runs `npm run build`, then `npm run check:engine`, then the automated suite. Open http://127.0.0.1:8875/skills-jam-3d.html. To serve the production build, serve the `dist` directory with any static web server. No login, API keys, backend, or CDN is required.
+`npm test` checks the existing engine bundle before building and running the automated suite. After editing runtime source, run `npm run build` first. Open http://127.0.0.1:8875/skills-jam-3d.html. To serve the production build, serve the `dist` directory with any static web server. No login, API keys, backend, or CDN is required.
 
 ### Engine source of truth
 
@@ -39,7 +39,7 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `lake-adventure.mjs`: canoe and camping experience.
 - `assets/models`: game-ready GLBs; `assets/concert/CREDITS.md`: satellite-image credits.
 - `art/skills-jam/ASSET-BUDGET.md`: ship-size budgets and recompress notes; `art/skills-jam/VISUAL-BIBLE.md`: style target + visual regression pointers.
-- `art/skills-jam/blender/`: Blender → GLB export scripts + manifest (`npm run export:kits`, `compress:glbs`, `measure:kits`, `check:glb-budgets`). Editable `.blend` files are optional and usually not committed. Shipped GLBs are meshopt-compressed.
+- `art/skills-jam/blender/`: Blender → GLB export scripts + manifest (`npm run export:kits`, `compress:glbs`, `measure:kits`, `check:glb-budgets`). The five editable working `.blend` files are committed under `sources/`; run `npm run pipeline:kits` to regenerate. Shipped GLBs are meshopt-compressed.
 - `audio`: browser-ready soundtrack MP3s (96 kbps stereo; see `audio/README.md`); `festival-music.mjs`: track mapping and playback.
 - `passport-store.mjs`: localStorage key constants and passport / discovery load-save helpers (exposed as `window.PassportStore`).
 
@@ -130,7 +130,7 @@ Astra + GPT Image produce concepts, texture tiles, and Blender orthos (style-loc
 
 - [`art/skills-jam/pipeline/README.md`](art/skills-jam/pipeline/README.md)
 - Prompt pack: `art/skills-jam/pipeline/prompts/` (`npm run pipeline:check` verifies kit coverage)
-- Blender sources folder: `art/skills-jam/blender/sources/` (optional large `.blend` files; LFS later)
+- Blender sources folder: `art/skills-jam/blender/sources/` (five committed, packed working kits)
 
 ## Visual regression
 
@@ -155,3 +155,12 @@ Campsite props now block walking, with sliding along obstacles and a reachable t
 
 Shipped MP3s are re-encoded for web weight (**96 kbps stereo, 44.1 kHz**). See `audio/README.md` to regenerate after replacing a master. `npm run build` copies only the playable paths from `festival-music.mjs` into `dist/audio`.
 
+
+## Atelier graphics workflow
+
+See [the Blender workflow](art/skills-jam/blender/README.md) for the executed
+concept → Blender → compressed GLB pipeline, fixed-frame visual comparisons, and
+full-resolution evidence. `npm run author:kits` regenerates the current authored
+tent and prop pass; `npm run pipeline:kits` exports and validates saved sources.
+
+[Executed workflow and visual evidence](art/skills-jam/pipeline/IMPLEMENTATION.md).

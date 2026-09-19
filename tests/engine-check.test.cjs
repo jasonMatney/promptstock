@@ -16,6 +16,28 @@ test('package.json wires build and check:engine into npm test',()=>{
   assert.match(pkg.scripts.test,/npm run build/);
   assert.match(pkg.scripts.test,/npm run check:engine/);
   assert.equal(pkg.scripts['check:engine'],'node scripts/check-engine.mjs');
+  assert.ok(pkg.scripts.test.indexOf('check:engine') < pkg.scripts.test.indexOf('build'), 'detect stale committed output before rebuilding it');
+});
+
+test('checker rejects a stale bundle without replacing it', async()=>{
+  const os=require('node:os');
+  const {build}=await import('esbuild');
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'jam-engine-regression-'));
+  try {
+    fs.mkdirSync(path.join(dir,'scripts'));
+    fs.copyFileSync(path.join(__dirname,'../scripts/check-engine.mjs'),path.join(dir,'scripts/check-engine.mjs'));
+    fs.symlinkSync(path.resolve(__dirname,'../node_modules'),path.join(dir,'node_modules'),'dir');
+    fs.writeFileSync(path.join(dir,'engine-source.mjs'),'globalThis.example = 1;');
+    await build({entryPoints:[path.join(dir,'engine-source.mjs')],bundle:true,format:'iife',target:['es2022'],minify:true,outfile:path.join(dir,'engine.js'),legalComments:'eof'});
+    const check=()=>spawnSync(process.execPath,[path.join(dir,'scripts/check-engine.mjs')],{encoding:'utf8'});
+    assert.equal(check().status,0);
+    const old=fs.readFileSync(path.join(dir,'engine.js'),'utf8');
+    fs.writeFileSync(path.join(dir,'engine-source.mjs'),'globalThis.example = 2;');
+    const result=check();
+    assert.equal(result.status,1);
+    assert.match(result.stderr,/stale/);
+    assert.equal(fs.readFileSync(path.join(dir,'engine.js'),'utf8'),old);
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
 
 test('check-engine exits 0 against the freshly built engine.js',()=>{

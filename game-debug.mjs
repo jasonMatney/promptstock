@@ -29,6 +29,8 @@ export const CAMERA_PRESETS = {
   meadow_path: [[0, 2.4, 34], [0, 1.4, 20]],
   pier: [[23, 2.8, -58], [23, 1.0, -72]],
   camp: [[-48, 2.6, -6], [-51, 1.1, -16]],
+  atelier_tents: [[0, 5, 17], [0, 2, -4]],
+  atelier_clinic: [[12.5, 2.8, 9], [16, 2, 1]],
   player_closeup: [[-2.5, 1.85, 27], [-4.2, 1.0, 24]],
 };
 
@@ -128,7 +130,22 @@ export function attachGameDebug(host) {
   };
 
   const api = {
-    version: '1.4.0',
+    version: '1.5.0',
+
+    /** Freeze simulation and animation at a repeatable frame for visual review. */
+    freezeFrame(time = 0.5) {
+      if (!Number.isFinite(time) || time < 0) throw new Error('Expected a nonnegative finite time');
+      if (!host.engine) throw new Error('engine unavailable');
+      host.engine.debugFrozenTime = time;
+      for (const entry of host.engine.jamKit?.mixers || []) entry.mixer.setTime(time);
+      if (host.engine.renderer?.shadowMap) host.engine.renderer.shadowMap.needsUpdate = true;
+      return time;
+    },
+
+    resume() {
+      if (host.engine) delete host.engine.debugFrozenTime;
+      clearDebugCamera();
+    },
 
     /** Spot / district ids you can teleport to. */
     listLocations() {

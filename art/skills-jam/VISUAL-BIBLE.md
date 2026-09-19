@@ -4,7 +4,7 @@
 
 ## Canonical look
 
-- Primary still: [`renders/goldens/festival_stage_wide.jpg`](renders/goldens/festival_stage_wide.jpg)
+- Primary still: [`renders/goldens/festival_stage_wide.png`](renders/goldens/festival_stage_wide.png)
 - Convenience copy for agents: [`visual_target_01.jpg`](visual_target_01.jpg) (same frame)
 
 Other goldens under `renders/goldens/` (`meadow_path`, `camp`, `pier`, `player_closeup`) cover secondary beats. Do not invent new Midjourney boards unless product asks; prefer these captures.
@@ -29,3 +29,12 @@ Threshold and viewport defaults live in `scripts/compare-visual.mjs`. If a chang
 ## Out of scope here
 
 Schedules / NPC data, WebGPU, full HTML rewrite — separate PRs. Asset size targets: see [`ASSET-BUDGET.md`](ASSET-BUDGET.md).
+
+## Atelier refinement
+
+The new concept sheet in `pipeline/concepts/tent-atelier-v1.png` guides authored
+hipped canvas, cedar frames, gathered curtains, ochre piping and brass lanterns.
+Preserve the summer palette, clear entrances, and crisp runtime booth titles.
+Inspect `renders/astra/*-after.png` at full size; low-quality regression images
+are not an art-acceptance substitute. Capture time is fixed with
+`gameDebug.freezeFrame(.5)`; `gameDebug.resume()` restores live simulation.

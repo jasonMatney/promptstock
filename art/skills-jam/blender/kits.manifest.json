@@ -1,12 +1,12 @@
 {
-  "description": "Hero kit libraries for Blender \u2192 GLB export. Place matching .blend files beside this manifest (same basename as blend field).",
+  "description": "Editable source kits in sources/. Regenerate exports with npm run pipeline:kits.",
   "eyeHeightM": 1.82,
   "outputDir": "assets/models",
   "reportPath": "art/skills-jam/REPORT.json",
   "kits": [
     {
       "id": "tent_kit",
-      "blend": "tent_kit.blend",
+      "blend": "sources/tent_kit.blend",
       "glb": "tent_kit.glb",
       "roots": [
         "tent_ai",
@@ -19,7 +19,7 @@
     },
     {
       "id": "props_kit",
-      "blend": "props_kit.blend",
+      "blend": "sources/props_kit.blend",
       "glb": "props_kit.glb",
       "roots": [
         "kickball_globe",
@@ -44,7 +44,7 @@
     },
     {
       "id": "player_jam",
-      "blend": "player_jam.blend",
+      "blend": "sources/player_jam.blend",
       "glb": "player_jam.glb",
       "roots": [
         "player_jam"
@@ -58,7 +58,7 @@
     },
     {
       "id": "crowd_kit",
-      "blend": "crowd_kit.blend",
+      "blend": "sources/crowd_kit.blend",
       "glb": "crowd_kit.glb",
       "roots": [
         "crowd_1",
@@ -73,7 +73,7 @@
     },
     {
       "id": "world_dressing",
-      "blend": "world_dressing.blend",
+      "blend": "sources/world_dressing.blend",
       "glb": "world_dressing.glb",
       "roots": [
         "tree_oak",

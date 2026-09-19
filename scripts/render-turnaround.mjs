@@ -11,6 +11,8 @@ const passArgs = process.argv.slice(2).length ? process.argv.slice(2) : ['--kit'
 
 function findBlender() {
   if (process.env.BLENDER && existsSync(process.env.BLENDER)) return process.env.BLENDER;
+  const local = join(root, '.tools/Blender.app/Contents/MacOS/Blender');
+  if (existsSync(local)) return local;
   const which = spawnSync('which', ['blender'], { encoding: 'utf8' });
   if (which.status === 0) return which.stdout.trim();
   for (const p of ['/usr/bin/blender', '/usr/local/bin/blender', '/Applications/Blender.app/Contents/MacOS/Blender']) {
@@ -25,7 +27,7 @@ if (!blender) {
   process.exit(1);
 }
 
-const result = spawnSync(blender, ['--background', '--python', script, '--', ...passArgs], {
+const result = spawnSync(blender, ['--background', '--python-exit-code', '1', '--python', script, '--', ...passArgs], {
   cwd: root,
   stdio: 'inherit',
 });

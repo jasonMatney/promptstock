@@ -52,7 +52,7 @@ for (const name of required) {
     throw new Error(`gameDebug missing ${name}`);
   }
 }
-if (api.version !== '1.2.0') throw new Error(`unexpected version ${api.version}`);
+if (!/^1\./.test(api.version) || typeof api.freezeFrame !== 'function' || typeof api.resume !== 'function') throw new Error(`unexpected version ${api.version}`);
 if (typeof loadQualityPreference !== 'function') throw new Error('loadQualityPreference missing');
 if (typeof saveQualityPreference !== 'function') throw new Error('saveQualityPreference missing');
 if (typeof applyEngineQuality !== 'function') throw new Error('applyEngineQuality missing');
