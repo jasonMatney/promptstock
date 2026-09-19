@@ -76,7 +76,7 @@ test('attachGameDebug exposes the console API shape on a mock host',async()=>{
   Object.defineProperty(globalThis,'localStorage',{value:store,configurable:true});
   try{
     const api=attachGameDebug(host);
-    assert.equal(api.version,'1.3.0');
+    assert.equal(api.version,'1.4.0');
     assert.deepEqual(api.listLocations(),DEFAULT_LOCATIONS);
     assert.deepEqual(api.listCameras().sort(),Object.keys(CAMERA_PRESETS).sort());
 
@@ -169,4 +169,36 @@ test('applyEngineQuality flips engine.low and resizes',async()=>{
   assert.equal(engine.resized,true);
   applyEngineQuality(engine,'high');
   assert.equal(engine.low,false);
+});
+
+test('atmosphere debug APIs setTime, setWind, getAtmosphere, setWeather', async () => {
+  const { attachGameDebug } = await load();
+  const { createAtmosphere } = await import('../atmosphere.mjs');
+  let targetDusk = 0;
+  const engine = { dusk: 0, campNight: 0, low: false, resize() {}, setCamera() {}, canvas: { toDataURL: () => 'data:image/png;base64,x' } };
+  createAtmosphere(engine, {
+    setTargetDusk: (v) => { targetDusk = v; },
+    getTargetDusk: () => targetDusk,
+  });
+  const api = attachGameDebug({ engine, teleport() {}, state: {} });
+  assert.equal(typeof api.setTime, 'function');
+  assert.equal(typeof api.setWind, 'function');
+  assert.equal(typeof api.getAtmosphere, 'function');
+  assert.equal(typeof api.setWeather, 'function');
+
+  const dusk = api.setTime('dusk');
+  assert.equal(dusk.preset, 'dusk');
+  assert.equal(targetDusk, 1);
+  assert.equal(engine.dusk, 1);
+
+  assert.equal(api.setWind(1.5), 1.5);
+  assert.equal(engine.windStrength.value, 1.5);
+
+  const snap = api.getAtmosphere();
+  assert.equal(snap.systems.wind, 'live');
+  assert.equal(snap.systems.weather, 'stub');
+  assert.equal(snap.wind, 1.5);
+
+  assert.equal(api.setWeather({ clouds: 0.5 }).clouds, 0.5);
+  assert.throws(() => api.setTime('brunch'), /Unknown time preset/);
 });

@@ -29,6 +29,7 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `skills-jam-3d.html`: world layout, menus and first-person exploration.
 - `engine-source.mjs`: Three.js renderer; `engine.js` is its generated bundle.
 - `game-debug.mjs`: `window.gameDebug` console API (teleport, cameras, quality, screenshots); attached after boot.
+- `atmosphere.mjs`: WindSystem / TimeOfDaySystem / AmbientAudioSystem (live) + WeatherSystem (stub); shared clock presets; wired from the engine animate path.
 - `festival-play.mjs`: activities and progression.
 - `festival-concert.mjs` and `concert-layout.mjs`: shuffled audience, reserved companion positions, instanced flags and satellite signs.
 - `festival-npcs.mjs`: data-driven NPC registry (featured companions + crowd groups/roles/schedules); see file header for how to add an NPC.
@@ -101,6 +102,27 @@ npm run smoke:browser
 
 Or with the preview server: `python3 scripts/preview-kit.py 8875`, open the page, then use the one-liners above.
 
+
+
+## Atmosphere systems
+
+`atmosphere.mjs` formalizes festival environment drivers (default boot == current afternoon look so visual goldens stay stable):
+
+| System | Status | Role |
+|--------|--------|------|
+| **WindSystem** | live | Scales grass / flags / trees / tents sway via `engine.windStrength` (shader uniform). Magic numbers live in `WIND`. |
+| **TimeOfDaySystem** | live | Presets `noon`, `late-afternoon` (default), `dusk`, `night` or normalized `0–1` → `dusk` / `campNight`. Hooks existing `updateLighting`. |
+| **AmbientAudioSystem** | live | Light district multiplier on the existing stage-distance music bed (does not replace FestivalMusic fades). |
+| **WeatherSystem** | stub | Stores `clouds` intensity; writes `cloudIntensity` sky uniform when present (1 = current cover). |
+
+Console:
+
+```js
+gameDebug.setTime('dusk')         // or 0–1
+gameDebug.setWind(1.5)            // 0–3, default 1
+gameDebug.setWeather({ clouds: 0.8 })
+gameDebug.getAtmosphere()         // snapshot + live/stub map
+```
 
 ## Visual regression
 

@@ -4,6 +4,7 @@
  * Then use window.gameDebug from the console.
  * NPC helpers: listNpcs(), getNpc(id), focusNpc(id), setNpcSchedule(id, tags),
  * advanceSchedule(id?) — see festival-npcs.mjs / npc-schedule.mjs.
+ * Atmosphere: setTime / setWind / getAtmosphere / setWeather — see atmosphere.mjs.
  *
  * localStorage keys used by the jam (passport/discovery helpers: passport-store.mjs):
  * - skillsjam.world.passport.v1 — stamps / pills / record / dog
@@ -127,7 +128,7 @@ export function attachGameDebug(host) {
   };
 
   const api = {
-    version: '1.3.0',
+    version: '1.4.0',
 
     /** Spot / district ids you can teleport to. */
     listLocations() {
@@ -361,6 +362,42 @@ export function attachGameDebug(host) {
     /** Alias for captureAll. */
     screenshotSuite(names, opts) {
       return api.captureAll(names, opts);
+    },
+
+    /** Resolve atmosphere controller (engine.atmosphere or host.atmosphere). */
+    _atmosphere() {
+      return host.engine?.atmosphere || host.atmosphere || null;
+    },
+
+    /**
+     * Festival clock: normalized 0–1 or preset (noon, late-afternoon, dusk, night).
+     * Default boot is late-afternoon (dusk=0) — same look as pre-atmosphere goldens.
+     */
+    setTime(input) {
+      const atm = api._atmosphere();
+      if (!atm?.setTime) throw new Error('atmosphere not available (boot the festival first)');
+      return atm.setTime(input);
+    },
+
+    /** Wind sway strength 0–3 (1 = current default meadow/flag/tree sway). */
+    setWind(value) {
+      const atm = api._atmosphere();
+      if (!atm?.setWind) throw new Error('atmosphere not available (boot the festival first)');
+      return atm.setWind(value);
+    },
+
+    /** Snapshot of time, wind, weather, ambient bed, and live/stub system map. */
+    getAtmosphere() {
+      const atm = api._atmosphere();
+      if (!atm?.snapshot) throw new Error('atmosphere not available (boot the festival first)');
+      return atm.snapshot();
+    },
+
+    /** Weather stub: { clouds } intensity (1 = current sky cover). */
+    setWeather(input) {
+      const atm = api._atmosphere();
+      if (!atm?.setWeather) throw new Error('atmosphere not available (boot the festival first)');
+      return atm.setWeather(input);
     },
   };
 
