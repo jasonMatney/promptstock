@@ -18,7 +18,8 @@
     "measure:kits": "node scripts/measure-kits.mjs",
     "check:glb-budgets": "node scripts/check-glb-budgets.mjs",
     "compress:glbs": "node scripts/compress-glbs.mjs",
-    "render:turnaround": "node scripts/render-turnaround.mjs"
+    "render:turnaround": "node scripts/render-turnaround.mjs",
+    "pipeline:check": "node scripts/pipeline-check.mjs"
   },
   "dependencies": {
     "esbuild": "0.28.2",

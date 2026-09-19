@@ -124,6 +124,14 @@ gameDebug.setWeather({ clouds: 0.8 })
 gameDebug.getAtmosphere()         // snapshot + live/stub map
 ```
 
+## Art pipeline
+
+Astra + GPT Image produce concepts, texture tiles, and Blender orthos (style-locked to the visual bible). Humans author hero kits in Blender; `npm run export:kits` ships GLB. Full handoff (prompts → Blender → export → budgets → compress → visual test):
+
+- [`art/skills-jam/pipeline/README.md`](art/skills-jam/pipeline/README.md)
+- Prompt pack: `art/skills-jam/pipeline/prompts/` (`npm run pipeline:check` verifies kit coverage)
+- Blender sources folder: `art/skills-jam/blender/sources/` (optional large `.blend` files; LFS later)
+
 ## Visual regression
 
 Named-camera JPEG goldens live in `art/skills-jam/renders/goldens/` (480×270, low quality, ~25 KB each). Compare with Playwright + pixelmatch:

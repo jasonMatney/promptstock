@@ -2,6 +2,12 @@
 
 Editable Blender sources for Promptstock hero kits live **here** (not committed by default — blends are large and optional for gameplay). Shipped game-ready binaries stay in `assets/models/*.glb`.
 
+## Sources + image handoff
+
+Editable hero `.blend` files belong in [`sources/`](sources/) (gitkept; large binaries may use Git LFS later). Copy or symlink a kit blend beside this README (basename must match `kits.manifest.json`) before `npm run export:kits`.
+
+Astra / GPT Image does **not** author blends — it supplies concepts, textures, and orthos. Full Image → Blender → export → budget → compress → visual-test flow: [`../pipeline/README.md`](../pipeline/README.md).
+
 ## Kits
 
 | Kit id | Expected blend | Shipped GLB | Notes |
