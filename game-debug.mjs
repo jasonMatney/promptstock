@@ -3,7 +3,7 @@
  * Attach after the world boots: window.attachGameDebug(window.skillsJam)
  * Then use window.gameDebug from the console.
  *
- * localStorage keys used by the jam (also see passport load near skills-jam-3d.html):
+ * localStorage keys used by the jam (passport/discovery helpers: passport-store.mjs):
  * - skillsjam.world.passport.v1 — stamps / pills / record / dog
  * - skillsjam.discovery.v2 — discovered districts
  * - skillsjam.round.v1 — mini-game round state (festival-play)

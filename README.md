@@ -34,11 +34,12 @@ WASD to wander, mouse to look, E to interact, M for the map. Follow the three he
 - `jam-kit.mjs`: GLB loading, batching and baked character poses.
 - `lake-adventure.mjs`: canoe and camping experience.
 - `assets/models`: game-ready GLBs; `assets/concert/CREDITS.md`: satellite-image credits.
-- `audio`: browser-ready soundtrack files; `festival-music.mjs`: track mapping and playback.
+- `audio`: browser-ready soundtrack MP3s (96 kbps stereo; see `audio/README.md`); `festival-music.mjs`: track mapping and playback.
+- `passport-store.mjs`: localStorage key constants and passport / discovery load-save helpers (exposed as `window.PassportStore`).
 
 This repository contains the current playable source and assets, not earlier development history or the original reference illustration. Internal filenames and save keys retain their existing names for compatibility. Progress is stored in the browser for the current hostname.
 
-Browser `localStorage` keys (hostname-scoped):
+Browser `localStorage` keys (hostname-scoped; see `passport-store.mjs` and `game-debug.mjs`):
 
 - `skillsjam.world.passport.v1` — passport stamps / pills / record
 - `skillsjam.discovery.v2` — discovered districts
@@ -81,3 +82,8 @@ Or with the preview server: `python3 scripts/preview-kit.py 8875`, open the page
 ## Campsite and audio updates
 
 Campsite props now block walking, with sliding along obstacles and a reachable tent-entrance bedtime interaction. The island has instanced grass with clear paths. Playing music fades to silence over 700 ms before a replacement starts; pause and rapid selections cancel pending transitions.
+
+### Soundtrack encode
+
+Shipped MP3s are re-encoded for web weight (**96 kbps stereo, 44.1 kHz**). See `audio/README.md` to regenerate after replacing a master. `npm run build` copies only the playable paths from `festival-music.mjs` into `dist/audio`.
+
