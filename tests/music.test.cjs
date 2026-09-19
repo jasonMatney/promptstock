@@ -29,7 +29,7 @@ test('playback failure is retryable; volume and paused position survive resuming
  const failed=music.playRecord('Connect');const track=music.track;track.error={code:4};track.reject(Error('media failure'));assert.equal(await failed,false);assert.equal(music.status,'error');
  const retry=music.playRecord('Connect');assert.equal(music.track,track);assert.equal(track.loads,1);assert.equal(track.volume,.3);track.resolve();assert.equal(await retry,true);
  track.currentTime=42;music.pause();const resumed=music.playRecord('Connect');track.resolve();assert.equal(await resumed,true);assert.equal(track.currentTime,42);
- const next=music.playRecord('Stay Curious');assert.equal(music.track.volume,.3);assert.match(music.track.src,/stay-curious\.mp3\?v=b68bbb383b16$/);music.track.resolve();await next;
+ const next=music.playRecord('Stay Curious');assert.equal(music.track.volume,.3);assert.match(music.track.src,/stay-curious\.mp3\?v=3ebe2d327cbe$/);music.track.resolve();await next;
  const replacement=music.track;replacement.currentTime=17;music.pause();const replacementResume=music.playRecord('Stay Curious');assert.equal(music.track,replacement);replacement.resolve();await replacementResume;assert.equal(replacement.currentTime,17);
 });
 test('local file URLs are released on replacement and songs stay lazy until played',async()=>{

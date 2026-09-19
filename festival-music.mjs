@@ -2,7 +2,7 @@ export const BACKGROUND_TRACK = Object.freeze({title:'Aspen Trail Drift',src:'au
 export const CAMP_TRACK = Object.freeze({title:'Moonlit Cabin Hush',src:'audio/moonlit-cabin-hush.mp3'});
 export const FINALE_TRACK = Object.freeze({title:'One Island One View',src:'audio/one-island-one-view.mp3'});
 export const RECORD_TRACKS = Object.freeze([
-  ['Communicate','communicate'],['Solve','solve'],['Create','create'],['Connect','connect'],['Stay Curious','stay-curious','b68bbb383b16']
+  ['Communicate','communicate'],['Solve','solve'],['Create','create'],['Connect','connect'],['Stay Curious','stay-curious','3ebe2d327cbe']
 ].map(([title,slug,revision])=>Object.freeze({title,src:`audio/records/${slug}.mp3`,revision})));
 export function recordTrack(name){return RECORD_TRACKS.find(t=>t.title.toLowerCase()===String(name).toLowerCase());}
 
