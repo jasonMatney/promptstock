@@ -3,9 +3,9 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 let THREE;
 async function fixture(){
- THREE=await import('three');const FestivalCrowd=await import('../festival-crowd.mjs');const {FestivalEngine}=await import('../engine-source.mjs');
+ THREE=await import('three');const FestivalCrowd=await import('../festival-crowd.mjs');const FestivalMapData=await import('../festival-map-data.mjs');const {FestivalEngine}=await import('../engine-source.mjs');
  const noop=()=>{};const ctx2d=new Proxy({}, {get:(_,key)=>key==='measureText'?text=>({width:text.length*12}):noop,set:()=>true});
- const ctx=vm.createContext({console,Float32Array,URL,document:{createElement:()=>({getContext:()=>ctx2d}),addEventListener:noop},window:{FestivalCrowd,FestivalEngine,addEventListener:noop},localStorage:{getItem:()=>null},matchMedia:()=>({matches:false})});
+ const ctx=vm.createContext({console,Float32Array,URL,document:{createElement:()=>({getContext:()=>ctx2d}),addEventListener:noop},window:{FestivalCrowd,FestivalMapData,FestivalEngine,addEventListener:noop},localStorage:{getItem:()=>null},matchMedia:()=>({matches:false})});
  const h=fs.readFileSync(path.join(__dirname,'../skills-jam-3d.html'),'utf8');for(const m of h.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))vm.runInContext(m[1].replace(/\bboot\(\);\s*$/,''),ctx);
  const e=Object.create(FestivalEngine.prototype);Object.assign(e,{scene:new THREE.Scene(),geometries:new Map(),materials:new Map(),batches:[],time:{value:0},sun:new THREE.DirectionalLight(),texture:()=>null,low:false,dusk:0});e.sun.position.set(-50,90,-40);
  ctx.adapter=e;vm.runInContext('engine=adapter;posterTexture={id:"poster",gl:null};foliageTexture={id:"foliage",gl:null};buildWorld();',ctx);return{e,ctx};

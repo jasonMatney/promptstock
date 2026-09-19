@@ -8,3 +8,6 @@ tests/fixtures/lake-preview.html
 
 dist/
 .openai/
+
+# Visual regression working copies / diffs
+art/skills-jam/renders/artifacts/

@@ -79,6 +79,22 @@ npm run smoke:browser
 
 Or with the preview server: `python3 scripts/preview-kit.py 8875`, open the page, then use the one-liners above.
 
+
+## Visual regression
+
+Named-camera JPEG goldens live in `art/skills-jam/renders/goldens/` (480×270, low quality, ~25 KB each). Compare with Playwright + pixelmatch:
+
+```sh
+npx playwright install chromium   # once per machine
+npm run test:visual               # compare; exit 1 if >2% pixels differ
+UPDATE_VISUAL_GOLDENS=1 npm run test:visual   # rewrite goldens
+# or: node scripts/compare-visual.mjs --update
+```
+
+Diffs and actual captures land in `art/skills-jam/renders/artifacts/` (gitignored). This is **not** part of `npm test` — keep the unit suite fast. Captures can still flake across GPUs/fonts; prefer low quality + fixed viewport, and re-golden deliberately.
+
+Map destinations / tour stop lists live in `festival-map-data.mjs` (`window.FestivalMapData`).
+
 ## Campsite and audio updates
 
 Campsite props now block walking, with sliding along obstacles and a reachable tent-entrance bedtime interaction. The island has instanced grass with clear paths. Playing music fades to silence over 700 ms before a replacement starts; pause and rapid selections cancel pending transitions.
