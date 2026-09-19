@@ -2,7 +2,16 @@
  * Lightweight browser debug surface for Promptstock.
  * Attach after the world boots: window.attachGameDebug(window.skillsJam)
  * Then use window.gameDebug from the console.
+ *
+ * localStorage keys used by the jam (also see passport load near skills-jam-3d.html):
+ * - skillsjam.world.passport.v1 — stamps / pills / record / dog
+ * - skillsjam.discovery.v2 — discovered districts
+ * - skillsjam.round.v1 — mini-game round state (festival-play)
+ * - skillsjam.quality.v1 — rendering quality preference ('high' | 'low')
  */
+
+/** Persist rendering quality ('high' | 'low'). */
+export const QUALITY_STORAGE_KEY = 'skillsjam.quality.v1';
 
 /** Named cinematic / look presets: [cameraPosition, lookAtTarget]. */
 export const CAMERA_PRESETS = {
@@ -20,6 +29,82 @@ export const DEFAULT_LOCATIONS = [
 ];
 
 /**
+ * @param {Storage | {getItem(k:string):string|null}} [storage]
+ * @returns {'high'|'low'|null}
+ */
+export function loadQualityPreference(storage) {
+  const store = storage ?? (typeof localStorage !== 'undefined' ? localStorage : null);
+  if (!store?.getItem) return null;
+  try {
+    const raw = store.getItem(QUALITY_STORAGE_KEY);
+    if (raw == null || raw === '') return null;
+    if (raw === 'high' || raw === 'low') return raw;
+    const parsed = JSON.parse(raw);
+    if (parsed === 'high' || parsed === 'low') return parsed;
+    if (parsed && (parsed.level === 'high' || parsed.level === 'low')) return parsed.level;
+  } catch {
+    /* ignore corrupt preference */
+  }
+  return null;
+}
+
+/**
+ * @param {'high'|'low'} level
+ * @param {Storage | {setItem(k:string,v:string):void}} [storage]
+ */
+export function saveQualityPreference(level, storage) {
+  if (level !== 'high' && level !== 'low') {
+    throw new Error(`saveQualityPreference expects 'high' or 'low', got ${JSON.stringify(level)}`);
+  }
+  const store = storage ?? (typeof localStorage !== 'undefined' ? localStorage : null);
+  if (!store?.setItem) return;
+  try {
+    store.setItem(QUALITY_STORAGE_KEY, level);
+  } catch {
+    /* private mode / quota */
+  }
+}
+
+/**
+ * Apply quality to an engine-like object (sets .low and calls resize).
+ * @param {{low?:boolean, resize?:Function}} engine
+ * @param {'high'|'low'} level
+ */
+export function applyEngineQuality(engine, level) {
+  if (!engine) throw new Error('applyEngineQuality requires an engine');
+  if (level !== 'high' && level !== 'low') {
+    throw new Error(`applyEngineQuality expects 'high' or 'low', got ${JSON.stringify(level)}`);
+  }
+  engine.low = level === 'low';
+  engine.resize?.();
+  return level;
+}
+
+function resolveCanvas(engine) {
+  return engine?.canvas || engine?.renderer?.domElement || null;
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  if (typeof document === 'undefined') return;
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  a.click();
+}
+
+function captureCanvasPng(engine) {
+  const canvas = resolveCanvas(engine);
+  if (!canvas || typeof canvas.toDataURL !== 'function') {
+    throw new Error('engine canvas.toDataURL is not available');
+  }
+  if (typeof engine.draw === 'function') {
+    const t = engine.time?.value ?? 0;
+    engine.draw(t);
+  }
+  return canvas.toDataURL('image/png');
+}
+
+/**
  * @param {object} host window.skillsJam-style host
  * @returns {object} API also assigned to window.gameDebug
  */
@@ -33,7 +118,7 @@ export function attachGameDebug(host) {
   };
 
   const api = {
-    version: '1.0.0',
+    version: '1.1.0',
 
     /** Spot / district ids you can teleport to. */
     listLocations() {
@@ -116,15 +201,66 @@ export function attachGameDebug(host) {
       };
     },
 
-    /** 'high' = detailed (engine.low false), 'low' = lighter path. */
+    /**
+     * 'high' = detailed (engine.low false), 'low' = lighter path.
+     * Persists to localStorage key skillsjam.quality.v1.
+     */
     setQuality(level) {
       if (level !== 'high' && level !== 'low') {
         throw new Error(`setQuality expects 'high' or 'low', got ${JSON.stringify(level)}`);
       }
       if (!host.engine) throw new Error('host.engine is not available');
-      host.engine.low = level === 'low';
-      host.engine.resize?.();
+      applyEngineQuality(host.engine, level);
+      saveQualityPreference(level);
       return level;
+    },
+
+    /**
+     * Optionally setCamera first, then return a PNG data URL from the canvas.
+     * @param {string} [cameraName]
+     * @param {{download?:boolean, filename?:string}} [opts]
+     * @returns {string} data URL
+     */
+    capture(cameraName, opts = {}) {
+      if (cameraName) api.setCamera(cameraName);
+      if (!host.engine) throw new Error('host.engine is not available');
+      const dataUrl = captureCanvasPng(host.engine);
+      const name = cameraName || 'view';
+      if (opts.download) {
+        downloadDataUrl(dataUrl, opts.filename || `promptstock-${name}.png`);
+      }
+      return dataUrl;
+    },
+
+    /** Alias for capture. */
+    screenshot(cameraName, opts) {
+      return api.capture(cameraName, opts);
+    },
+
+    /**
+     * Cycle named cameras (or all presets) and return {name, dataUrl} shots.
+     * @param {string[]} [names]
+     * @param {{download?:boolean}} [opts]
+     */
+    captureAll(names, opts = {}) {
+      const list = Array.isArray(names) && names.length
+        ? names
+        : Object.keys(CAMERA_PRESETS);
+      const shots = [];
+      for (const name of list) {
+        api.setCamera(name);
+        const dataUrl = captureCanvasPng(host.engine);
+        if (opts.download) {
+          downloadDataUrl(dataUrl, `promptstock-${name}.png`);
+        }
+        shots.push({ name, dataUrl });
+      }
+      return shots;
+    },
+
+    /** Alias for captureAll. */
+    screenshotSuite(names, opts) {
+      return api.captureAll(names, opts);
     },
   };
 
