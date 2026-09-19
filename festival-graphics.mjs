@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { WIND } from './atmosphere.mjs';
 
 // Generated surface artwork and authored detail; all interactive objects remain 3D.
 const noiseGLSL = `
@@ -58,16 +59,18 @@ export function createMeadow(engine,isPath,isBooth){
  const points=[];
  for(let i=0;i<80000;i++){const x=random()*116-58,z=random()*84-47;if(isPath(x,z)||isBooth(x,z)||(Math.abs(x)<10&&z<-20&&z>-32))continue;const patch=.5+.5*Math.sin(x*.55+Math.sin(z*.31)*2);if(random()> .35+patch*.65)continue;points.push([x,z,random(),random()]);}
  const material=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.96,side:THREE.DoubleSide});
+ engine.windStrength??={value:WIND.defaultStrength};
  material.onBeforeCompile=shader=>{
   shader.uniforms.jamTime=engine.time;
-  shader.vertexShader='uniform float jamTime;varying float vBladeHeight;\n'+shader.vertexShader;
+  shader.uniforms.windStrength=engine.windStrength;
+  shader.vertexShader='uniform float jamTime;uniform float windStrength;varying float vBladeHeight;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
  vBladeHeight=uv.y;vec3 origin=instanceMatrix[3].xyz;
- transformed.x+=sin(jamTime*1.3+origin.x*.6+origin.z*.45)*uv.y*uv.y*.075;
- transformed.z+=sin(jamTime*.8+origin.z*.7)*uv.y*uv.y*.035;`);
+ transformed.x+=sin(jamTime*${WIND.meadowFreqX}+origin.x*.6+origin.z*.45)*uv.y*uv.y*${WIND.meadowAmpX}*windStrength;
+ transformed.z+=sin(jamTime*${WIND.meadowFreqZ}+origin.z*.7)*uv.y*uv.y*${WIND.meadowAmpZ}*windStrength;`);
   shader.fragmentShader='varying float vBladeHeight;\n'+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=mix(vec3(.72,.83,.5),vec3(1.08,1.07,.79),vBladeHeight);');
- };material.customProgramCacheKey=()=> 'jam-meadow-v2';
+ };material.customProgramCacheKey=()=> 'jam-meadow-v3';
  const grass=new THREE.InstancedMesh(geometry,material,points.length),dummy=new THREE.Object3D(),color=new THREE.Color();
  for(let i=0;i<points.length;i++){const [x,z,r,s]=points[i];dummy.position.set(x,-.016,z);dummy.rotation.y=r*Math.PI*2;dummy.scale.set(.65+s*.55, .07+r*.14,.65+s*.55);dummy.updateMatrix();grass.setMatrixAt(i,dummy.matrix);color.setHSL(.20+s*.045,.28+r*.12,.31+r*.10);grass.setColorAt(i,color);}
  grass.instanceMatrix.needsUpdate=true;grass.instanceColor.needsUpdate=true;grass.receiveShadow=true;grass.castShadow=false;grass.computeBoundingSphere();grass.name='Wind-swept meadow';engine.scene.add(grass);engine.meadow=grass;if(engine.low)grass.count=Math.floor(points.length*.25);
@@ -113,11 +116,11 @@ export function refineKitCanopies(engine,kit){
 }
 
 export function createFestivalSky(engine){
- const material=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{jamTime:engine.time,dusk:{value:0},sunDirection:{value:new THREE.Vector3(-.55,.82,-.48).normalize()},zenith:{value:new THREE.Color('#5c9fcd')},horizon:{value:new THREE.Color('#b6d4e3')}},vertexShader:`varying vec3 vSky;void main(){vSky=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 vSky;uniform float jamTime;uniform float dusk;uniform vec3 sunDirection;uniform vec3 zenith;uniform vec3 horizon;
+ const material=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{jamTime:engine.time,dusk:{value:0},cloudIntensity:{value:1},sunDirection:{value:new THREE.Vector3(-.55,.82,-.48).normalize()},zenith:{value:new THREE.Color('#5c9fcd')},horizon:{value:new THREE.Color('#b6d4e3')}},vertexShader:`varying vec3 vSky;void main(){vSky=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 vSky;uniform float jamTime;uniform float dusk;uniform float cloudIntensity;uniform vec3 sunDirection;uniform vec3 zenith;uniform vec3 horizon;
 ${noiseGLSL}
 float fbm(vec2 p){return jamNoise(p)*.53+jamNoise(p*2.03)*.27+jamNoise(p*4.07)*.13+jamNoise(p*8.11)*.07;}
 void main(){vec3 direction=normalize(vSky-cameraPosition);float elevation=max(direction.y,0.);vec3 top=mix(zenith,vec3(.23,.30,.42),dusk);vec3 edge=mix(horizon,vec3(.87,.48,.28),dusk);vec3 sky=mix(edge,top,smoothstep(0.,.68,elevation));
-vec2 plane=direction.xz/max(.13,direction.y)*1.3+vec2(jamTime*.002,0.);float cloud=fbm(plane);float cover=smoothstep(.54,.69,cloud)*smoothstep(.06,.23,elevation);float cloudShade=fbm(plane+vec2(.10,.18));vec3 cloudColor=mix(vec3(.63,.71,.74),vec3(1.,.96,.84),cloudShade);cloudColor=mix(cloudColor,vec3(.96,.64,.40),dusk*.5);sky=mix(sky,cloudColor,cover*.9);float sun=pow(max(dot(direction,normalize(sunDirection)),0.),160.);sky+=vec3(1.,.79,.45)*sun*.5;gl_FragColor=vec4(sky,1.);
+vec2 plane=direction.xz/max(.13,direction.y)*1.3+vec2(jamTime*.002,0.);float cloud=fbm(plane);float cover=smoothstep(.54,.69,cloud)*smoothstep(.06,.23,elevation)*cloudIntensity;float cloudShade=fbm(plane+vec2(.10,.18));vec3 cloudColor=mix(vec3(.63,.71,.74),vec3(1.,.96,.84),cloudShade);cloudColor=mix(cloudColor,vec3(.96,.64,.40),dusk*.5);sky=mix(sky,cloudColor,cover*.9);float sun=pow(max(dot(direction,normalize(sunDirection)),0.),160.);sky+=vec3(1.,.79,.45)*sun*.5;gl_FragColor=vec4(sky,1.);
 #include <tonemapping_fragment>
 #include <colorspace_fragment>
 }`});
